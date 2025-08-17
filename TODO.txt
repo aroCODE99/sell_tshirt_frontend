@@ -1,0 +1,24 @@
+TODO:
+now let's make the axios interceptor for handling the jwt and refresh token
+
+now i am stuck very much that how should i be able to 
+now let's finish the worrking of the filters and then working of the whole app 
+like adding the products to the cart also adding the error boundaries
+
+-> WHEN EVER WE ADD THE PRODUCT TO THE CART IT SHOULD GIVE US THE NOTIFICATION THAT WE ADDED THE PRODUCT TO THE CART
+
+-> now i am done with the filtering stuff 
+-> now let's focus on privateRoute and add to cart functionality
+-> now let's focus on the authentication of the user
+-> now let's change the theme
+
+
+DO-1: this is not a do-3 per say just add the filter for showing that // need to fix this let's fix this
+DO-2: user may able to change the size variant directly from the cart
+DO-3: add the super cash feature where user will be able to collect the cash based on their orders 
+
+DO-future
+// check the user cart and user wishlist is created after the registering the user successFully
+// now let's work with the functionality of the add to cart
+// then fix the filtering
+// ctrl + k search 
