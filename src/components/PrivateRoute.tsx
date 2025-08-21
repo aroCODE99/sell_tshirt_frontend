@@ -3,13 +3,14 @@ import {useAuth} from "../contexts/AuthContext";
 
 const PrivateRoute = () => {
 	const { auth } = useAuth();
-
 	const location = useLocation();
-	if (auth.isAuthenticated) {
+
+	console.log(auth);
+	if (localStorage.getItem("jwt")) {
 		return <Outlet />
 	}
 
-	return <Navigate to={'/login'} state={{ from : location.state }}/>
+	return <Navigate to={'/'} state={{ from : location.state }}/>
 };
 
 export default PrivateRoute;

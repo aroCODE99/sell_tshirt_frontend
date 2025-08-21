@@ -1,144 +1,219 @@
-import { useState } from "react";
-import { ClipLoader } from "react-spinners";
-import { useGetOrders } from "../../hooks/Queries";
+import {useMemo, useState} from "react";
+import {ClipLoader} from "react-spinners";
+import {useGetOrders} from "../../hooks/Queries";
 import dayjs from "dayjs";
+import type {orderProductType, ordersType} from "../../types/OrdersType";
+import OrderSidebar from "./OrderSidebar";
+import {
+	Package,
+	Calendar,
+	ChevronRight,
+	Search,
+	Filter,
+	Truck,
+	CheckCircle,
+	Clock,
+	AlertCircle
+} from "lucide-react";
 
 const MyOrders = () => {
-	const { data: orders, isLoading } = useGetOrders();
-	const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+	let {data: orders, isLoading} = useGetOrders();
+	const [selectedOrder, setSelectedOrder] = useState<ordersType | null>(null);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [statusFilter, setStatusFilter] = useState("all");
 
-	if (isLoading)
-		return (
-			<p className="min-h-screen flex items-center justify-center text-center mt-10 text-gray-500">
-				<ClipLoader size={20} />
-			</p>
-		);
-
-		if (!orders?.length) {
-			return <p className="text-center mt-10 text-gray-500">No orders found.</p>;
+	orders = useMemo(() => {
+		if (orders) {
+			return orders.sort((a, b) => b.id - a.id)
 		}
+	}, [orders])
 
+	if (isLoading) {
 		return (
-			<div className="min-h-screen max-w-5xl mx-auto p-4 space-y-6 relative">
-				<h1 className="text-2xl font-semibold text-gray-800">My Orders</h1>
+			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+				<div className="text-center">
+					<ClipLoader size={40} color="#3B82F6" />
+					<p className="mt-4 text-gray-600">Loading your orders...</p>
+				</div>
+			</div>
+		);
+	}
 
-				{orders.map((order) => (
-					<div
-						key={order.id}
-						className="bg-white rounded-xl shadow-md p-5 border border-gray-100 cursor-pointer hover:shadow-lg transition"
-						onClick={() => setSelectedOrder(order)}
-					>
-						{/* Order Header */}
-						<div className="flex justify-between items-center border-b pb-3 mb-4">
-							<div>
-								<p className="text-sm text-gray-500">
-									Order #{order.id} • {dayjs(order.orderDate).format("DD MMM YYYY")}
-								</p>
-								<p className="text-lg font-semibold text-gray-800">
-									Total: ₹{order.totalAmount}
-								</p>
-							</div>
-							<span
-								className={`px-3 py-1 text-xs font-medium rounded-full 
-									${
-										order.trackingDetails?.status === "PENDING"
-											? "bg-red-400 text-white"
-											: "bg-blue-100 text-blue-600"
-									}`}
-							>
-								{order.trackingDetails?.status || "N/A"}
-							</span>
+	if (!orders?.length) {
+		return (
+			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+				<div className="text-center p-8 bg-white rounded-xl shadow-sm max-w-md">
+					<Package className="mx-auto text-gray-400 h-16 w-16 mb-4" />
+					<h1 className="text-2xl font-bold text-gray-900 mb-2">No Orders Yet</h1>
+					<p className="text-gray-600 mb-6">You haven't placed any orders yet. Start shopping to see your orders here.</p>
+					<button className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+						Start Shopping
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	// Filter orders based on search and status
+	const filteredOrders = orders.filter((order: ordersType) => {
+		const matchesSearch = order.id.toString().includes(searchTerm) ||
+			order.orderProducts.some(op =>
+				op.product.name.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+
+		const matchesStatus = statusFilter === "all" ||
+			order.trackingDetails?.status?.toLowerCase() === statusFilter.toLowerCase();
+
+		return matchesSearch && matchesStatus;
+	});
+
+	console.log(filteredOrders);
+	// Get status count for filter options
+	const statusCounts = {
+		all: orders.length,
+		pending: orders.filter(order => order.trackingDetails?.status?.toLowerCase() === "pending").length,
+		shipped: orders.filter(order => order.trackingDetails?.status?.toLowerCase() === "shipped").length,
+		delivered: orders.filter(order => order.trackingDetails?.status?.toLowerCase() === "delivered").length,
+	};
+
+	// Status icon and color mapping
+	const getStatusDetails = (status: string) => {
+		switch (status?.toLowerCase()) {
+			case 'delivered':
+				return {icon: CheckCircle, color: 'bg-green-100 text-green-800', border: 'border-green-200'};
+			case 'shipped':
+				return {icon: Truck, color: 'bg-blue-100 text-blue-800', border: 'border-blue-200'};
+			case 'pending':
+				return {icon: Clock, color: 'bg-amber-100 text-amber-800', border: 'border-amber-200'};
+			default:
+				return {icon: AlertCircle, color: 'bg-gray-100 text-gray-800', border: 'border-gray-200'};
+		}
+	};
+
+	return (
+		<div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+			<div className="max-w-6xl mx-auto">
+				{/* Header */}
+				<div className="mb-8">
+					<h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
+					<p className="text-gray-600">View and manage your order history</p>
+				</div>
+
+				{/* Search and Filter */}
+				<div className="bg-white rounded-xl shadow-sm p-5 mb-6">
+					<div className="flex flex-col md:flex-row gap-4">
+						<div className="relative flex-1">
+							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+							<input
+								type="text"
+								placeholder="Search by order ID or product name..."
+								className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+								value={searchTerm}
+								onChange={(e) => setSearchTerm(e.target.value)}
+							/>
 						</div>
 
-						{/* Products List */}
-						<div className="flex flex-wrap gap-4">
-							{order.orderProducts.map((product) => (
-								<div
-									key={product.id}
-									className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200"
+						<div className="flex flex-wrap gap-2">
+							{Object.entries(statusCounts).map(([status, count]) => (
+								<button
+									key={status}
+									onClick={() => setStatusFilter(status)}
+									className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === status
+										? 'bg-blue-600 text-white'
+										: 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+										}`}
 								>
-									<img
-										src={
-											product.product.imgPath ||
-												"../../../public/ArgentinaJerse/argentinaJersey.avif"
-										}
-										alt={product.product.name}
-										className="w-full h-full object-cover"
-									/>
-								</div>
+									{status.charAt(0).toUpperCase() + status.slice(1)} ({count})
+								</button>
 							))}
 						</div>
 					</div>
-				))}
+				</div>
 
-				{/* Sidebar Drawer */}
-				{selectedOrder && (
-					<div className="fixed inset-0 flex min-w-[500px] z-99">
-						{/* Overlay */}
-						<div
-							className="flex-1 bg-black opacity-50"
-							onClick={() => setSelectedOrder(null)}
-						/>
-
-						{/* Sidebar */}
-						<div className="w-lg bg-white shadow-xl h-full p-6 overflow-y-auto">
-							<h2 className="text-xl font-semibold mb-4">
-								Tracking Details - #{selectedOrder.id}
-							</h2>
-
-							{/* Tracking Status */}
-							<div className="p-4 bg-gray-100 rounded-lg mb-4">
-								<p className="font-medium">
-									Status: {selectedOrder.trackingDetails?.status}
-								</p>
-								<p className="text-sm text-gray-500">
-									Updated:{" "}
-									{dayjs(selectedOrder.trackingDetails?.updatedAt).format(
-										"DD MMM YYYY, hh:mm A"
-									)}
-								</p>
-							</div>
-
-							{/* Address */}
-							<div className="p-4 border rounded-lg mb-4">
-								<h3 className="text-lg font-semibold mb-2">Shipping Address</h3>
-								<p>{selectedOrder.trackingDetails?.addresses?.name}</p>
-								<p>{selectedOrder.trackingDetails?.addresses?.streetName}</p>
-								<p>
-									{selectedOrder.trackingDetails?.addresses?.city},{" "}
-									{selectedOrder.trackingDetails?.addresses?.postalCode}
-								</p>
-								<p>{selectedOrder.trackingDetails?.addresses?.country}</p>
-								<p className="text-sm text-gray-500">
-									📞 {selectedOrder.trackingDetails?.addresses?.phoneNumber}
-								</p>
-							</div>
-
-							{/* Products */}
-							<div>
-								<h3 className="text-lg font-semibold mb-2">Products</h3>
-								<ul className="divide-y">
-									{selectedOrder.orderProducts.map((p) => (
-										<li
-											key={p.id}
-											className="py-2 flex justify-between items-center"
-										>
-											<span>
-												{p.product.name} (x{p.quantity})
-											</span>
-											<span className="text-gray-700">
-												₹{p.product.price * p.quantity}
-											</span>
-										</li>
-									))}
-								</ul>
-							</div>
+				{/* Orders List */}
+				<div className="space-y-4">
+					{filteredOrders.length === 0 ? (
+						<div className="bg-white rounded-xl shadow-sm p-8 text-center">
+							<Search className="mx-auto text-gray-400 h-12 w-12 mb-4" />
+							<h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+							<p className="text-gray-600">Try adjusting your search or filter criteria</p>
 						</div>
-					</div>
-				)}
+					) : (
+						filteredOrders.map((order) => {
+							const StatusIcon = getStatusDetails(order.trackingDetails?.status).icon;
+							const statusColor = getStatusDetails(order.trackingDetails?.status).color;
+							const statusBorder = getStatusDetails(order.trackingDetails?.status).border;
+
+							return (
+								<div
+									key={order.id}
+									className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition cursor-pointer"
+									onClick={() => setSelectedOrder(order)}
+								>
+									<div className="p-5 border-b border-gray-100">
+										<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+											<div>
+												<div className="flex items-center gap-2 mb-1">
+													<span className="text-sm font-medium text-gray-500">Order #{order.id}</span>
+													<span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
+														<StatusIcon size={12} />
+														{order.trackingDetails?.status || "N/A"}
+													</span>
+												</div>
+												<p className="text-lg font-semibold text-gray-900">₹{order.totalAmount}</p>
+											</div>
+
+											<div className="flex items-center gap-4 text-sm text-gray-600">
+												<div className="flex items-center gap-1">
+													<Calendar size={16} />
+													<span>{dayjs(order.orderDate).format("DD MMM YYYY")}</span>
+												</div>
+												<ChevronRight size={18} className="text-gray-400" />
+											</div>
+										</div>
+									</div>
+
+									<div className="p-5">
+										<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+											<div className="flex -space-x-2">
+												{order.orderProducts.slice(0, 4).map((product: orderProductType, index: number) => (
+													<div
+														key={product.id}
+														className="relative w-12 h-12 rounded-lg border-2 border-white overflow-hidden shadow-sm"
+														style={{zIndex: 5 - index}}
+													>
+														<img
+															src={
+																product.product.imgPath || "/placeholder-product.jpg"
+															}
+															alt={product.product.name}
+															className="w-full h-full object-cover"
+														/>
+														{index === 3 && order.orderProducts.length > 4 && (
+															<div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-medium">
+																+{order.orderProducts.length - 4}
+															</div>
+														)}
+													</div>
+												))}
+											</div>
+
+											<div className="text-sm text-gray-600">
+												{order.orderProducts.length} item{order.orderProducts.length !== 1 ? 's' : ''}
+											</div>
+										</div>
+									</div>
+								</div>
+							);
+						})
+					)}
+				</div>
 			</div>
-		);
+
+			{/* Order Details Sidebar */}
+			<OrderSidebar selectedOrder={selectedOrder} setSelectedOrder={setSelectedOrder} />
+		</div>
+	);
 };
 
 export default MyOrders;
-

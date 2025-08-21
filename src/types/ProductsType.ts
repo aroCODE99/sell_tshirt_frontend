@@ -13,12 +13,14 @@ export type ProductsType = {
 	id: number;
 	name: string;
 	price: number;
-	category: CategoryType;
+	discountedPrice: number;
+	category: string;
 	description: string;
 	imgPath: string;
 	cloudinarPublicId: string;
 	color: string;
 	productVariants: ProductVariants[];
+	featured: boolean;
 };
 
 export type CartProduct = ProductsType & { quantity: number, size: string }

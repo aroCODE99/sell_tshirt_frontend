@@ -1,6 +1,6 @@
 import { HiOutlinePlus, HiOutlineHome, HiOutlineOfficeBuilding, HiOutlineX } from "react-icons/hi";
 import { useGetAddresses } from "../../hooks/Queries";
-import type {addressType} from "../../contexts/AuthContext";
+import type {addressType} from "../../types/UserType";
 
 type propsType = {
 	selectedAddress: addressType | undefined,

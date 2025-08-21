@@ -17,14 +17,17 @@ const LoginForm = () => {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-
 		try {
 			await handleLogin({ email, password });
 			navigate("/shop");
 		} catch (e: any) {
-			toast.error(e.message);
-			console.error(e)
+			if (e.status) {
+				toast.error("Credentials do not match");
+			} else {
+				toast.error(e.message);
+			}
 			authDispatch({ type: "CHANGE_LOADING", payload: false });
+			console.error(e)
 			return;
 		}
 

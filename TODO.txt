@@ -12,10 +12,11 @@ like adding the products to the cart also adding the error boundaries
 -> now let's focus on the authentication of the user
 -> now let's change the theme
 
+DO-1:  
 
-DO-1: this is not a do-3 per say just add the filter for showing that // need to fix this let's fix this
-DO-2: user may able to change the size variant directly from the cart
-DO-3: add the super cash feature where user will be able to collect the cash based on their orders 
+DO-future: this is not a do-3 per say just add the filter for showing that // need to fix this let's fix this
+DO-future: user may able to change the size variant directly from the cart
+DO-future: add the super cash feature where user will be able to collect the cash based on their orders 
 
 DO-future
 // check the user cart and user wishlist is created after the registering the user successFully

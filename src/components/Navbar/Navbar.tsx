@@ -1,13 +1,15 @@
-import {useState, type ReactNode} from "react";
+import {useEffect, useState, type ReactNode} from "react";
 import {CiSearch} from "react-icons/ci";
 import Profile from "./Profile";
 import Cart from "./Cart";
 import {BiX} from "react-icons/bi";
 import {Link} from "react-router-dom";
+import {useAuth} from "../../contexts/AuthContext";
 
 const Navbar = (): ReactNode => {
 
 	const [search, setSearch] = useState("");
+	const { auth } = useAuth();
 
 	return (
 		<nav className="flex justify-between items-center border-b border-gray-300 px-20 h-[90px] fixed w-full bg-white z-90">
@@ -38,7 +40,14 @@ const Navbar = (): ReactNode => {
 			</div>
 
 			{/* this will be the latter section */}
-			<div className="flex justify-around items-center min-w-[300px] h-full">
+			<div className="flex justify-around items-center gap-8 min-w-[300px] h-full">
+				{auth.isAdmin && (
+					<Link to={"/admin/dashboard"}><button 
+						className="flex-1 px-4 py-2 mx-8 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold shadow-md hover:from-purple-600 hover:to-indigo-600 hover:shadow-lg transition duration-300">
+						Admin
+					</button>
+					</Link>
+				)}
 				<Profile />
 				<Cart />
 			</div>

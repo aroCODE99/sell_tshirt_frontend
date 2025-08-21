@@ -13,7 +13,7 @@ import ServerError from "../ServerError";
 
 export default function CheckoutSummary() {
 	const { data: userAddresses = [], isLoading, error: apiError } = useGetAddresses();
-	const { data: item } = useRecentOrder();
+	const { data: item } = useRecentOrder(); // which is using the recentOrder
 	const [showAddressSidebar, setShowAddressSidebar] = useState(false);
 	const [showAddressForm, setShowAddressForm] = useState(false);
 
@@ -49,6 +49,7 @@ export default function CheckoutSummary() {
 				};
 
 				await API.post(`${import.meta.env.VITE_API_URL}/api/payment/callback`, data)
+				navigate("/shop/orders");
 			},
 			"prefill": {
 				"name": "Prathamesh Pagare",
@@ -207,6 +208,11 @@ export default function CheckoutSummary() {
 								<span>Platform Fee</span>
 								<span>₹0</span>
 							</div>
+
+							<div className="flex justify-between">
+								<span>Tax (5%)</span>
+								<span>{item?.totalAmount}</span>
+							</div>
 						</div>
 
 						<hr className="my-4" />
@@ -222,7 +228,7 @@ export default function CheckoutSummary() {
 							onClick={() => handlePayment()}
 							className="mt-6 w-full py-3 bg-black hover:bg-slate-800 text-white rounded-lg font-semibold transition"
 						>
-							{ razorpayLoading ? <ClipLoader color="white" size={20} /> : "Proceed to Payment" }
+							 Proceed to Payment 
 						</button>
 					</div>
 				</div>

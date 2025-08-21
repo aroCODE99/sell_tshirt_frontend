@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import {  useRecentOrder } from "../../hooks/Queries";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import FeatureSection from "./FeatureSection";
 import { ClipLoader } from "react-spinners";
 import {Link} from "react-router-dom";
+import {useCartContext} from "../../contexts/CartContext";
 
 export default function CheckOutPage() {
 	const { data: recentOrder, isLoading } = useRecentOrder();
+	const { dispatchCartAction } = useCartContext();
 	const [couponCode, setCouponCode] = useState("");
 
 	// Dummy coupons array
@@ -29,6 +31,10 @@ export default function CheckOutPage() {
 	const tax = subtotal * 0.05;
 	const total = subtotal + shipping + tax;
 
+	useEffect(() => {
+		dispatchCartAction({ type: "SET_CART_SIDEBAR_OPEN", payload: false });
+	}
+	, [])
 	return (
 		<div className="min-h-screen bg-gray-50 py-10 px-4">
 			{ isLoading ? <div className="flex justify-center items-center min-h-screen"> <ClipLoader /> </div>:

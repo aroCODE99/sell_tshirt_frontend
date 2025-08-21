@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import {useEffect, useRef, useState} from "react";
+import {IoIosArrowDown, IoIosArrowUp} from "react-icons/io";
 import {useFilters} from "../../contexts/FilterContext";
-import type {CategoryType, ProductsType} from "../../types/ProductsType";
-import {useCategories, useProducts} from "../../hooks/Queries";
+import type {ProductsType} from "../../types/ProductsType";
+import {useProducts} from "../../hooks/Queries";
+import {GetCategories, GetColors} from "../../utilities/ProductUtils";
 
 const FilterSideBar = () => {
-	const { filters, dispatchFilters } = useFilters();
-	const { data: products } = useProducts();
-	const { data: categories } = useCategories();
+	const {filters, dispatchFilters} = useFilters();
+	const {data: products} = useProducts();
+	const categories = GetCategories();
+	const { uniqueColors } = GetColors();
+
 
 	// now these are the ui states
 	const [showSortingMethods, setShowSortingMethods] = useState(false);
@@ -31,23 +34,18 @@ const FilterSideBar = () => {
 
 		switch (method) {
 			case "Price (Low to High)":
-				return dispatchFilters({ type: "SORT_BY_PRICE_LOW" });
+				return dispatchFilters({type: "SORT_BY_PRICE_LOW"});
 			case "Price (High to Low)":
-				return dispatchFilters({ type: "SORT_BY_PRICE_HIGH" });
+				return dispatchFilters({type: "SORT_BY_PRICE_HIGH"});
 			default:
 				return;
 		}
 	}
 
-	const handleSortingCategories = (category: CategoryType) => {
-	   	dispatchFilters({ type: "SORT_BY_CATEGORY", payload: category.type });
-	   	setShowCategories(false) 
+	const handleSortingCategories = (category: string) => {
+		dispatchFilters({type: "SORT_BY_CATEGORY", payload: category});
+		setShowCategories(false)
 	};
-
-	const uniqueColors: string[] = Array.from(
-		new Set(Object.values(products ?? {}).map((product: ProductsType) => (
-		product.color
-	))));
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -71,12 +69,12 @@ const FilterSideBar = () => {
 					onClick={() => setShowSortingMethods(!showSortingMethods)}
 					className="w-full flex justify-between items-center text-xl font-semibold text-gray-800 bg-gray-100 px-6 py-4 rounded-lg hover:bg-gray-200 transition"
 				>
-					<span className="text-gray-500">Sort by: </span><span className="font-bold">{ activeSortingMethod }</span>
+					<span className="text-gray-500">Sort by: </span><span className="font-bold">{activeSortingMethod}</span>
 					{showSortingMethods ? <IoIosArrowUp size={24} /> : <IoIosArrowDown size={24} />}
 				</button>
 
 				{showSortingMethods && (
-					<div 
+					<div
 						className="absolute top-[100px] left-6 w-[340px] bg-white shadow-xl rounded-xl mt-2 z-50">
 						{sortingMethods.map((method, idx) => (
 							<div
@@ -97,13 +95,13 @@ const FilterSideBar = () => {
 			{/* Filter Section */}
 			<div className="flex justify-between items-center mb-4">
 				<h2 className="text-2xl font-bold text-gray-800 ">Filter Products</h2>
-				{ 
-					filters.isFiltered && 
-						<button 
-							onClick={() => dispatchFilters({ type: "CLEAR_FILTER" })}
-							className="px-4 py-2 text-white rounded-md bg-red-500 hover:bg-red-600 transition-all duration-150 cursor-pointer">
-							Clear filter
-						</button>
+				{
+					filters.isFiltered &&
+					<button
+						onClick={() => dispatchFilters({type: "CLEAR_FILTER"})}
+						className="px-4 py-2 text-white rounded-md bg-red-500 hover:bg-red-600 transition-all duration-150 cursor-pointer">
+						Clear filter
+					</button>
 				}
 			</div>
 
@@ -119,13 +117,13 @@ const FilterSideBar = () => {
 
 				{showCategories && (
 					<div className="mt-2 bg-white shadow-md rounded-lg">
-						{categories?.map((category) => (
+						{categories?.map((category, idx) => (
 							<div
 								onClick={() => handleSortingCategories(category)}
-								key={category.id}
+								key={idx}
 								className="px-6 py-4 text-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
 							>
-								{category.type}
+								{category}
 							</div>
 						))}
 					</div>
@@ -149,7 +147,7 @@ const FilterSideBar = () => {
 						<div className="mt-2 bg-white shadow-md rounded-lg max-h-[400px] overflow-auto">
 							{uniqueColors.map((color, idx) => (
 								<div
-									onClick={() => { dispatchFilters({ type: "SORT_BY_COLOR", payload: color }) ; setShowColor(false)}}
+									onClick={() => {dispatchFilters({type: "SORT_BY_COLOR", payload: color}); setShowColor(false)}}
 									key={idx}
 									className="px-6 py-4 text-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
 								>

@@ -1,11 +1,11 @@
 import { jwtDecode } from "jwt-decode";
-import { createContext, useContext, useEffect, useReducer, type ReactNode } from "react";
+import { act, createContext, useContext, useEffect, useReducer, type ReactNode } from "react";
 import { API } from "../utilities/axiosInterceptor";
 import axios from "axios";
 import {toast} from "react-toastify";
 
 type ActionType =
-	| { type: "LOGIN"; payload: { token: string, roles: RoleType[], userEmail: string | undefined, username: string | undefined } }
+	| { type: "LOGIN"; payload: { token: string, roles: RoleType[], userEmail: string | undefined, username: string | undefined, isAdmin: boolean } }
 	| { type: "CHANGE_DETAILS", payload: { roles: RoleType[], userEmail: string | undefined , username: string | undefined } }
 	| { type: "LOGOUT" }
 	| { type: "IS_ADMIN", payload: boolean }
@@ -43,18 +43,6 @@ type AuthStateType = {
 	error: string | undefined
 }
 
-export type addressType = {
-	id: number,
-	addressType: string,
-	city: string,
-	country: string,
-	landmark: string,
-	postalCode: number,
-	streetName: string
-	phoneNumber: string,
-	name: string
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -76,13 +64,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		switch (action.type) {
 			case "LOGIN":
 				return {
-				...state,
-				isAuthenticated: true,
-				loading: false,
-				token: action.payload.token,
-				userEmail: action.payload.userEmail,
-				username: action.payload.username,
-				userRoles: action.payload.roles
+					...state,
+					isAuthenticated: true,
+					loading: false,
+					token: action.payload.token,
+					userEmail: action.payload.userEmail,
+					username: action.payload.username,
+					userRoles: action.payload.roles,
+					isAdmin: action.payload.isAdmin
 			};
 			case "LOGOUT":
 				return { 
@@ -99,10 +88,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				return { ...state, isAdmin: action.payload }
 			case "ERROR":
 				return { ...state, error: action.error }
-			case "CHANGE_TOKEN":
+			case "CHANGE_TOKEN": // now do i really need this 
 				return { ...state, token: action.payload }
 			case "CHANGE_DETAILS":
-				return { ...state, isAuthenticated: true, username: action.payload.username, userEmail: action.payload.userEmail, userRoles: action.payload.roles }
+				return { ...state, isAuthenticated: true, username: action.payload.username, 
+					userEmail: action.payload.userEmail, userRoles: action.payload.roles }
 			case "CHANGE_LOADING":
 				return { ...state, loading: action.payload }
 			default:
@@ -115,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const handleLogin = async (loginData: { email: string; password: string }) => {
 		authDispatch({ type: "CHANGE_LOADING", payload: true });
 
-		const res = await API.post("/auth/login", loginData, {
+		const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, loginData, {
 			withCredentials: true,
 			headers: { "Content-Type": "application/json" }
 		});
@@ -124,9 +114,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		localStorage.setItem("jwt", token);
 
 		const jwtClaims = jwtDecode<jwtPayload>(token);
+		const isAdmin = jwtClaims.roles.some(r => r.authority === "ADMIN");
+
+		if (isAdmin) { 
+			localStorage.setItem("isAdmin", isAdmin.toString());
+		}
+
 		authDispatch({
 			type: "LOGIN",
-			payload: { token, roles: jwtClaims.roles, username: jwtClaims.username, userEmail: jwtClaims.sub }
+			payload: { token, roles: jwtClaims.roles, username: jwtClaims.username, userEmail: jwtClaims.sub, isAdmin  }
 		});
 	};
 
@@ -134,7 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		console.log("clicking the logout");
 		localStorage.removeItem("jwt");
 		authDispatch({ type: "LOGOUT" });
-		await API.post("/auth/logout", {}, {
+		await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, {
 			withCredentials: true,
 		});
 		window.location.href = "/";
@@ -144,28 +140,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const handleRegisterUser = async () => { };
 
 	useEffect(() => {
-		const isAdmin = auth.userRoles.some(role => role.authority === "ADMIN");
-		authDispatch({ type: "IS_ADMIN", payload: isAdmin });
-	}, [auth.userRoles]);
-
-	useEffect(() => {
 		const token = localStorage.getItem("jwt");
 		if (token) {
-			const decoded = jwtDecode<jwtPayload>(token);
-			authDispatch({ type: "LOGIN", payload: { token, userEmail: decoded.sub, username: decoded.username, roles: decoded.roles } });
+			const claims = jwtDecode<jwtPayload>(token);
+			const isAdmin = claims.roles.some(role => role.authority === "ADMIN");
+			if (isAdmin) { 
+				localStorage.setItem("isAdmin", isAdmin.toString());
+			}
+			authDispatch({ type: "LOGIN", payload: { token, userEmail: claims.sub, username: claims.username, roles: claims.roles, isAdmin } });
 		}
 	}, []);
 
 	useEffect(() => {
-		if (auth.token) {
-			const decoded = jwtDecode<jwtPayload>(auth.token);
-			authDispatch({ type: "CHANGE_DETAILS", payload: { userEmail: decoded.sub, username: decoded.username, roles: decoded.roles } });
-		}
-	}, [auth.token]);
-
-	useEffect(() => {
-		if (!auth.isAuthenticated) return;
-
 		const requestInterceptor = API.interceptors.request.use(
 			config => {
 				if (auth.token) {
@@ -183,6 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			res => res,
 				async error => {
 				const originalRequest = error.config;
+				console.log("this is the interceptor");
 				if (error.response?.status === 401 && !originalRequest._retry) {
 					originalRequest._retry = true;
 					try {
@@ -194,12 +181,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 						const { token } = res.data;
 						localStorage.setItem("jwt", token);
-						authDispatch({ type: "CHANGE_TOKEN", payload: token });
+
+						const claims = jwtDecode<jwtPayload>(token);
+						const isAdmin = claims.roles.some(role => role.authority === "ADMIN");
+						console.log(isAdmin);
+						authDispatch({ type: "LOGIN", payload: { token, userEmail: claims.sub, username: claims.username, roles: claims.roles, isAdmin } });
 						API.defaults.headers["Authorization"] = `Bearer ${token}`;
 					} catch (e) {
-						console.error("Refresh token failed", e);
 						localStorage.removeItem("jwt");
-						await API.post("/auth/logout", {}, { withCredentials: true });
+						localStorage.removeItem("isAdmin");
+						await axios.post(`${apiUrl}/auth/logout`, {}, { withCredentials: true });
+						authDispatch({ type: "LOGOUT" })
 						return Promise.reject(e);
 					}
 				}
@@ -211,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			API.interceptors.request.eject(requestInterceptor);
 			API.interceptors.response.eject(responseInterceptor);
 		};
-	}, [auth.token, auth.isAuthenticated]);
+	}, [auth.token]);
 
 	return (
 		<AuthContext.Provider value={{ auth, authDispatch, handleLogin, handleLogout, handleRegisterUser }}>

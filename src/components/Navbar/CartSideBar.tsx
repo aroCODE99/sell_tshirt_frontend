@@ -6,19 +6,21 @@ import CartCardSkeleton from "./CartCardSkeleton";
 import {useAuth} from "../../contexts/AuthContext";
 import ConfirmCheckout from "./ConfirmCheckout";
 import {createPortal} from "react-dom";
+import {AnimatePresence, motion} from "framer-motion";
+import {useCartContext} from "../../contexts/CartContext";
 
 const CartSideBar = () => {
 	const { auth } = useAuth()
 	const { data: cart, isLoading, refetch } = useGetCart();
+	const { cartState } = useCartContext();
 	const sideBarRef = useRef<HTMLDivElement | null>(null);
 	const [sidebarStyle, setSidebarStyle] = useState<"fixed" | "absolute">("fixed");
 	const [offsetTop, setOffsetTop] = useState<number>(0);
 	const [checkoutDisabled, setCheckoutDisabled] = useState(true);
 	const [confirmCheckout, setConfirmCheckout] = useState(false);
-	
+
 	useEffect(() => {
 		setCheckoutDisabled(Object.values(cart ?? {}).length === 0)
-		console.log(checkoutDisabled);
 	}, [cart])
 
 	useEffect(() => {
@@ -53,50 +55,59 @@ const CartSideBar = () => {
 	}, []);
 
 	return (
-		<div
-			ref={sideBarRef}
-			className="w-[550px] bg-white border-l border-gray-200 shadow-xl rounded-l-xl scroll-smooth"
-			style={{
-				position: sidebarStyle,
-				top: sidebarStyle === "fixed" ? "90px" : `${offsetTop}px`,
-				right: 0,
-				height: "calc(100vh - 90px)",
-				zIndex: 50,
-			}}
-		>
-			<div className="flex flex-col h-full">
-				{/* Header */}
-				<div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50 font-semibold text-xl text-gray-800">
-					<span>My Cart</span>
-				</div>
+		<AnimatePresence>
+			{ 
+				cartState.isCartSidebarOpen &&
+					<motion.div
+						ref={sideBarRef}
+						className="w-[550px] bg-white border-l border-gray-200 shadow-xl rounded-l-xl scroll-smooth"
+						style={{
+							position: sidebarStyle,
+							top: sidebarStyle === "fixed" ? "90px" : `${offsetTop}px`,
+							right: 0,
+							height: "calc(100vh - 90px)",
+							zIndex: 50,
+						}}
+						initial={{ x: "100%" }}       // starts off-screen (to the right)
+						animate={{ x: 0 }}           // slides into view
+						exit={{ x: "100%" }}         // slides out when unmounted
+						transition={{ type: "spring", stiffness: 200, damping: 25 }}
+					>
+						<div className="flex flex-col h-full">
+							{/* Header */}
+							<div className="relative flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50 font-semibold text-xl text-gray-800">
+								<span>My Cart</span>
+							</div>
 
-				<div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-white">
-					{!cart || Object.values(cart ?? {}).length === 0 ? (
-						isLoading ? Array.from({ length: 5 }).map(_ => {
-							return <CartCardSkeleton />
-						}): <NoCartProducts />
-					) : (
-					Object.entries(cart ?? {}).map((cp) => (
-						<CartCard key={Number(cp[0])} cp={cp} />
-					))
-					)}
-				</div>
+							<div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-white">
+								{!cart || Object.values(cart ?? {}).length === 0 ? (
+									auth.isAuthenticated && isLoading ? Array.from({ length: 5 }).map(_ => {
+										return <CartCardSkeleton />
+									}): <NoCartProducts />
+								) : (
+								Object.entries(cart ?? {}).map((cp) => (
+									<CartCard key={Number(cp[0])} cp={cp} />
+								))
+								)}
+							</div>
 
-				{/* Footer */}
-				<div className="p-5 border-t border-gray-200 bg-gray-50">
-					{
-						!checkoutDisabled &&
-							<button 
-								onClick={() => setConfirmCheckout(true)}
-								className={`w-full bg-black text-white rounded-lg py-3 font-medium hover:bg-gray-800`}>
-								Checkout 
-							</button>
-					}
+							{/* Footer */}
+							<div className="p-5 border-t border-gray-200 bg-gray-50">
+								{
+									!checkoutDisabled &&
+										<button 
+											onClick={() => setConfirmCheckout(true)}
+											className={`w-full bg-black text-white rounded-lg py-3 font-medium hover:bg-gray-800`}>
+											Checkout 
+										</button>
+								}
 
-					{ confirmCheckout && createPortal(<ConfirmCheckout setConfirmCheckout={setConfirmCheckout} />, document.body) }
-				</div>
-			</div>
-		</div>
+								{ confirmCheckout && createPortal(<ConfirmCheckout setConfirmCheckout={setConfirmCheckout} action="checkout" />, document.body) }
+							</div>
+						</div>
+					</motion.div>
+			}
+		</AnimatePresence>
 	);
 };
 
