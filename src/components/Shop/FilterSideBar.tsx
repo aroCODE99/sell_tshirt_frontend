@@ -1,13 +1,10 @@
 import {useEffect, useRef, useState} from "react";
 import {IoIosArrowDown, IoIosArrowUp} from "react-icons/io";
 import {useFilters} from "../../contexts/FilterContext";
-import type {ProductsType} from "../../types/ProductsType";
-import {useProducts} from "../../hooks/Queries";
 import {GetCategories, GetColors} from "../../utilities/ProductUtils";
 
 const FilterSideBar = () => {
 	const {filters, dispatchFilters} = useFilters();
-	const {data: products} = useProducts();
 	const categories = GetCategories();
 	const { uniqueColors } = GetColors();
 
@@ -123,7 +120,7 @@ const FilterSideBar = () => {
 								key={idx}
 								className="px-6 py-4 text-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
 							>
-								{category}
+								{category.toUpperCase()}
 							</div>
 						))}
 					</div>
@@ -151,7 +148,7 @@ const FilterSideBar = () => {
 									key={idx}
 									className="px-6 py-4 text-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
 								>
-									{color}
+									{color.toUpperCase()}
 								</div>
 							))}
 						</div>

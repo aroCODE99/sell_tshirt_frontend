@@ -21,6 +21,7 @@ export type ProductsType = {
 	color: string;
 	productVariants: ProductVariants[];
 	featured: boolean;
+	deleted: boolean;
 };
 
 export type CartProduct = ProductsType & { quantity: number, size: string }

@@ -22,7 +22,7 @@ type cartMapType = Record<number, CartProduct>;
 const productById = (products: ProductsType[]) => {
 	const productsMap: Record<number, ProductsType> = {};
 	products.forEach((product) => {
-		productsMap[product.id] = {...product};
+		if (!product.deleted) productsMap[product.id] = {...product};
 	});
 	return productsMap;
 };
@@ -269,7 +269,6 @@ export const useDeleteProduct = () => {
 			queryClient.setQueryData(['products'], (prevProducts: ProductsType[]) => {
 				return prevProducts.filter(p => p.id !== variables)
 			})
-
 			return {snapShotCache};
 		},
 		onError: (_err, _variables, context) => {
