@@ -10,7 +10,7 @@ import {Heart, ShoppingCart, Edit2, Eye, Star} from "lucide-react";
 
 const ProductCard = ({product}: {product: ProductsType}) => {
 	const {auth} = useAuth();
-	const {setShowLoginForm} = useLoginContext();
+	const {setFormType} = useLoginContext();
 	const {isPending} = useAddToCart();
 
 	// Modal state
@@ -26,7 +26,7 @@ const ProductCard = ({product}: {product: ProductsType}) => {
 
 	const handleAddToCartClick = () => {
 		if (!auth.isAuthenticated) {
-			setShowLoginForm(true);
+			setFormType("LOGIN");
 			return;
 		}
 		setShowSizeModal(true);

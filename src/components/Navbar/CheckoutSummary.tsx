@@ -1,64 +1,73 @@
-import { HiOutlineLocationMarker, HiOutlineTruck } from "react-icons/hi";
-import { useNavigate } from "react-router-dom";
-import { useGetAddresses, useRecentOrder } from "../../hooks/Queries";
-import { ClipLoader } from "react-spinners";
-import { useEffect, useMemo, useState } from "react";
+import {HiOutlineLocationMarker, HiOutlineTruck} from "react-icons/hi";
+import {useNavigate} from "react-router-dom";
+import {useGetAddresses, useRecentOrder} from "../../hooks/Queries";
+import {ClipLoader} from "react-spinners";
+import {useMemo, useState} from "react";
 import AddressSidebar from "../PaymentFlow/AddressSidebar";
 import {createPortal} from "react-dom";
 import AddressFormModal from "../PaymentFlow/AddressFormModal";
-import type {addressType} from "../../contexts/AuthContext";
+import {useAuth} from "../../contexts/AuthContext";
 import {API} from "../../utilities/axiosInterceptor";
-import {useRazorpay,  type RazorpayOrderOptions} from "react-razorpay";
+import {useRazorpay, type RazorpayOrderOptions} from "react-razorpay";
 import ServerError from "../ServerError";
+import type {addressType} from "../../types/UserType";
+import {toast} from "react-toastify";
 
 export default function CheckoutSummary() {
-	const { data: userAddresses = [], isLoading, error: apiError } = useGetAddresses();
-	const { data: item } = useRecentOrder(); // which is using the recentOrder
+	const {data: userAddresses = [], isLoading, error: apiError} = useGetAddresses();
+	const {data: item} = useRecentOrder(); // which is using the recentOrder
+	const {auth} = useAuth();
 	const [showAddressSidebar, setShowAddressSidebar] = useState(false);
 	const [showAddressForm, setShowAddressForm] = useState(false);
 
 	const [selectedAddress, setSelectedAddress] = useState<addressType | undefined>();
-	const { error, isLoading: razorpayLoading , Razorpay } = useRazorpay();
+	const {error, isLoading: razorpayLoading, Razorpay} = useRazorpay();
+
+	const convenienceFee = 20;
 
 	useMemo(() => {
-		if (userAddresses.length > 1) setSelectedAddress(userAddresses?.[0]); // it will prevent the un-necessary re-renders
+		if (userAddresses.length >= 1) setSelectedAddress(userAddresses?.[0]); // it will prevent the un-necessary re-renders
 	}, [userAddresses])
 
 	const address = selectedAddress || userAddresses?.[0]; // fallback to first address
 	const navigate = useNavigate();
 
 	const handlePayment = async () => {
-		const res = await API.post(`/api/payment/create-order?amount=${item?.totalAmount + 50 + 99}`);
-		const order = res.data;
+		if (selectedAddress) {
+			const res = await API.post(`/api/payment/create-order?amount=${item?.totalAmount + convenienceFee}`);
+			const order = res.data;
 
-		var options: RazorpayOrderOptions = {
-			"key": "rzp_test_R5xP5ynQR0L8Ih",
-			"amount": order.amount,
-			"currency": order.currency,
-			"name": "DripUK",
-			"description": "Payment for your product",
-			"order_id": order.id,
-			"handler": async (res) => {
-				const data = {
-					selectedAddressId: selectedAddress?.id,
-					userOrderId: item?.id,
-					orderCreationId: order.id,
-					razorpayPaymentId: res.razorpay_payment_id,
-					razorpayOrderId:   res.razorpay_order_id,
-					razorpaySignature: res.razorpay_signature,
-				};
+			var options: RazorpayOrderOptions = {
+				"key": import.meta.env.VITE_RZP_KEY,
+				"amount": order.amount,
+				"currency": order.currency,
+				"name": "DripUK",
+				"description": "Payment for your product",
+				"order_id": order.id,
+				"handler": async (res) => {
+					const data = {
+						selectedAddressId: selectedAddress?.id,
+						userOrderId: item?.id,
+						orderCreationId: order.id,
+						razorpayPaymentId: res.razorpay_payment_id,
+						razorpayOrderId: res.razorpay_order_id,
+						razorpaySignature: res.razorpay_signature,
+					};
 
-				await API.post(`${import.meta.env.VITE_API_URL}/api/payment/callback`, data)
-				navigate("/shop/orders");
-			},
-			"prefill": {
-				"name": "Prathamesh Pagare",
-				"email": "prathamesh.pagare789@gmail.com",
-			}
-		};
+					await API.post(`${import.meta.env.VITE_API_URL}/api/payment/callback`, data)
+					navigate("/shop/orders");
+				},
+				"prefill": {
+					"name": auth.username,
+					"email": auth.userEmail,
+				}
+			};
 
-		const razorPayInstance = new Razorpay(options);
-		razorPayInstance.open();
+			const razorPayInstance = new Razorpay(options);
+			razorPayInstance.open();
+		} else {
+			toast.warn("plz select the address");
+		}
 	}
 
 
@@ -92,47 +101,47 @@ export default function CheckoutSummary() {
 							</div>
 						</div>
 
-						{!address ? 
-							<div 
+						{!address ?
+							<div
 								onClick={() => setShowAddressForm(true)}
 								className="text-gray-600 italic cursor-pointer hover:underline">Please add a delivery address to continue</div> :
-									<div className="flex justify-between items-start">
-										<div>
-											<p className="font-medium text-gray-900">
-												{address?.name}
-												{address?.addressType && (
-													<span className="ml-2 px-2 py-0.5 text-xs border border-gray-300 rounded">
-														{address?.addressType}
-													</span>
-												)}
-											</p>
-											<p className="text-sm font-semibold mt-1">Default</p>
-											<p className="text-sm text-gray-700 mt-1">
-												{[address?.streetName, address?.landmark, address?.city, address?.country, address?.postalCode]
-													.filter(Boolean)
-													.join(", ")}
-											</p>
-											<p className="text-sm font-medium mt-1">
-												Phone: {address?.phoneNumber}
-											</p>
-											<button
-												onClick={() => setShowAddressSidebar(true)}
-												className="mt-3 text-blue-600 text-sm font-medium hover:underline cursor-pointer"
-											>
-												Change Address
-											</button>
-										</div>
+							<div className="flex justify-between items-start">
+								<div>
+									<p className="font-medium text-gray-900">
+										{address?.name}
+										{address?.addressType && (
+											<span className="ml-2 px-2 py-0.5 text-xs border border-gray-300 rounded">
+												{address?.addressType}
+											</span>
+										)}
+									</p>
+									<p className="text-sm font-semibold mt-1">Default</p>
+									<p className="text-sm text-gray-700 mt-1">
+										{[address?.streetName, address?.landmark, address?.city, address?.country, address?.postalCode]
+											.filter(Boolean)
+											.join(", ")}
+									</p>
+									<p className="text-sm font-medium mt-1">
+										Phone: {address?.phoneNumber}
+									</p>
+									<button
+										onClick={() => setShowAddressSidebar(true)}
+										className="mt-3 text-blue-600 text-sm font-medium hover:underline cursor-pointer"
+									>
+										Change Address
+									</button>
+								</div>
 
-										<div className="border border-dashed border-gray-300 rounded-lg px-4 py-2 text-center">
-											<p className="text-green-600 text-sm font-semibold">
-												Cash on delivery available
-											</p>
-											<p className="text-sm mt-1">
-												Est Delivery{" "}
-												<span className="font-bold">{item?.estimatedDeliveryDate || "22 Aug"}</span>
-											</p>
-										</div>
-									</div>
+								<div className="border border-dashed border-gray-300 rounded-lg px-4 py-2 text-center">
+									<p className="text-green-600 text-sm font-semibold">
+										Cash on delivery available
+									</p>
+									<p className="text-sm mt-1">
+										Est Delivery{" "}
+										<span className="font-bold">{item?.estimatedDeliveryDate || "22 Aug"}</span>
+									</p>
+								</div>
+							</div>
 
 						}
 					</div>
@@ -183,10 +192,6 @@ export default function CheckoutSummary() {
 						{/* Order Details */}
 						<h3 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h3>
 						<div className="space-y-2 text-sm">
-							<div className="flex justify-between">
-								<span>Bag total</span>
-								<span>₹50</span>
-							</div>
 							<div className="flex justify-between items-center">
 								<span>
 									Convenience Fee{" "}
@@ -198,20 +203,11 @@ export default function CheckoutSummary() {
 										</span>
 									</span>
 								</span>
-								<span>₹99</span>
+								<span>₹{convenienceFee}</span>
 							</div>
-							<div className="flex justify-between text-gray-500 line-through">
+							<div className={`flex justify-between text-black ${item?.totalAmount >= 2000 && "line-through"}`}>
 								<span>Delivery Fee</span>
 								<span>₹99</span>
-							</div>
-							<div className="flex justify-between">
-								<span>Platform Fee</span>
-								<span>₹0</span>
-							</div>
-
-							<div className="flex justify-between">
-								<span>Tax (5%)</span>
-								<span>{item?.totalAmount}</span>
 							</div>
 						</div>
 
@@ -220,7 +216,7 @@ export default function CheckoutSummary() {
 						{/* Total */}
 						<div className="flex justify-between font-bold text-lg">
 							<span>Order Total</span>
-							<span>₹{item?.totalAmount + 50 + 99}</span>
+							<span>₹{item?.totalAmount.toFixed(2)}</span>
 						</div>
 
 						{/* CTA */}
@@ -228,7 +224,7 @@ export default function CheckoutSummary() {
 							onClick={() => handlePayment()}
 							className="mt-6 w-full py-3 bg-black hover:bg-slate-800 text-white rounded-lg font-semibold transition"
 						>
-							 Proceed to Payment 
+							Proceed to Payment
 						</button>
 					</div>
 				</div>
@@ -246,7 +242,7 @@ export default function CheckoutSummary() {
 				</div>
 			)}
 
-			{ showAddressForm && createPortal(<AddressFormModal setShowAddressForm={setShowAddressForm} setShowAddressSidebar={setShowAddressSidebar} /> , document.body) }
+			{showAddressForm && createPortal(<AddressFormModal setShowAddressForm={setShowAddressForm} setShowAddressSidebar={setShowAddressSidebar} />, document.body)}
 		</div>
 	);
 }

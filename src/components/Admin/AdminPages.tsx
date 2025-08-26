@@ -1,7 +1,6 @@
 import {useState} from "react";
-import {Plus, Edit, Trash2, Package, ShoppingCart, Users, BarChart3, Settings, Search, Filter, MoreVertical} from "lucide-react";
+import {ShoppingCart, Users, Search, Filter} from "lucide-react";
 import {useCreateProduct, useMakeFeatureProduct, useProducts} from "../../hooks/Queries";
-import ConfirmFeaturedProduct from "./ConfirmFeaturedProduct";
 import {createPortal} from "react-dom";
 import type {ProductsType} from "../../types/ProductsType";
 import CreateProductModal from "./CreateProductModal";
@@ -9,6 +8,7 @@ import AdminSidebar from "./AdminSidebar";
 import {ClipLoader} from "react-spinners";
 import AdminPageHeader from "./AdminPageHeader";
 import ProductsTable from "./ProductsTable";
+import Modal from "../Modal";
 
 const AdminPage = () => {
 	const {data: products, isLoading} = useProducts();
@@ -43,7 +43,6 @@ const AdminPage = () => {
 			makeFeatureProduct(selectedProduct.id);
 			console.log(`Toggling featured status for: ${selectedProduct.name}`);
 		}
-		setShowModal(false);
 		setSelectedProduct(null);
 	};
 
@@ -131,13 +130,15 @@ const AdminPage = () => {
 			{/* Confirm Modal */}
 			{showModal &&
 				createPortal(
-					<ConfirmFeaturedProduct
-						selectedProduct={selectedProduct}
-						setShowModal={setShowModal}
-						confirmFeaturedChange={confirmFeaturedChange}
+					<Modal
+						condition={showModal}
+						title="Change Featured Status"
+						description={`Do you want to ${selectedProduct?.featured ? "remove" : "mark"} ${selectedProduct?.name} as a Featured Product?`}
+						onClose={() => setShowModal(false)}
+						handleMainSubmit={confirmFeaturedChange}
 					/>,
 					document.body
-				)}
+			)}
 
 			{showCreateProductModal &&
 				createPortal(
@@ -152,6 +153,7 @@ const AdminPage = () => {
 					/>,
 					document.body
 				)}
+
 		</div>
 	);
 };

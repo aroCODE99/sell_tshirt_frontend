@@ -4,17 +4,17 @@ import {useGetOrders} from "../../hooks/Queries";
 import dayjs from "dayjs";
 import type {orderProductType, ordersType} from "../../types/OrdersType";
 import OrderSidebar from "./OrderSidebar";
+import { GiConfirmed } from "react-icons/gi";
 import {
-	Package,
 	Calendar,
 	ChevronRight,
 	Search,
-	Filter,
 	Truck,
 	CheckCircle,
 	Clock,
 	AlertCircle
 } from "lucide-react";
+import NoOrders from "./NoOrders";
 
 const MyOrders = () => {
 	let {data: orders, isLoading} = useGetOrders();
@@ -40,18 +40,7 @@ const MyOrders = () => {
 	}
 
 	if (!orders?.length) {
-		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
-				<div className="text-center p-8 bg-white rounded-xl shadow-sm max-w-md">
-					<Package className="mx-auto text-gray-400 h-16 w-16 mb-4" />
-					<h1 className="text-2xl font-bold text-gray-900 mb-2">No Orders Yet</h1>
-					<p className="text-gray-600 mb-6">You haven't placed any orders yet. Start shopping to see your orders here.</p>
-					<button className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-						Start Shopping
-					</button>
-				</div>
-			</div>
-		);
+		return <NoOrders />
 	}
 
 	// Filter orders based on search and status
@@ -67,7 +56,6 @@ const MyOrders = () => {
 		return matchesSearch && matchesStatus;
 	});
 
-	console.log(filteredOrders);
 	// Get status count for filter options
 	const statusCounts = {
 		all: orders.length,
@@ -83,6 +71,8 @@ const MyOrders = () => {
 				return {icon: CheckCircle, color: 'bg-green-100 text-green-800', border: 'border-green-200'};
 			case 'shipped':
 				return {icon: Truck, color: 'bg-blue-100 text-blue-800', border: 'border-blue-200'};
+			case 'order_confirmed':
+				return {icon: GiConfirmed, color: 'bg-green-100 text-green-800', border: 'border-blue-200'};
 			case 'pending':
 				return {icon: Clock, color: 'bg-amber-100 text-amber-800', border: 'border-amber-200'};
 			default:

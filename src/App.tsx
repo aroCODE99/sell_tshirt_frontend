@@ -16,6 +16,7 @@ import PrivateRoute from "./components/PrivateRoute.tsx";
 import IsAdmin from "./components/IsAdmin.tsx";
 import React from "react";
 import TrackingDetails from "./components/orders/TrackingDetails.tsx";
+import OauthRedirect from "./components/OauthRedirect.tsx";
 
 const AdminPage = React.lazy(() => import("./components/Admin/AdminPages.tsx"));
 
@@ -48,6 +49,7 @@ const App = () => {
 
 						{/* so the real problem is that we are not getting hit this callback */}
 						<Route path="paymentCallback" element={<PaymentSuccess />} /> 
+						<Route path="/oauth/redirect" element={<OauthRedirect />} /> 
 					</Routes>
 				</CartContextProvider>
 			</LoginProvider>

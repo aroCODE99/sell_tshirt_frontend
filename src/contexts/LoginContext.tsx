@@ -1,18 +1,19 @@
-import {createContext, useContext, useState, type Dispatch, type SetStateAction} from "react";
+import {createContext, useContext, useState} from "react";
+
+type FormType = | "REGISTER" | "LOGIN" | "NONE"
 
 type LoginContextType = {
-	showLoginForm: boolean,
-	setShowLoginForm: Dispatch<SetStateAction<boolean>>,
+	formType: FormType, setFormType: React.Dispatch<React.SetStateAction<FormType>>
 }
 
 const LoginContext = createContext<LoginContextType | undefined>(undefined);
 
 export const LoginProvider = ({ children }: { children : React.ReactNode }) => {
 
-	const [showLoginForm, setShowLoginForm] = useState(false);
+	const [formType, setFormType] = useState<FormType>("NONE");
 
 	return (
-		<LoginContext value={{ showLoginForm, setShowLoginForm }}>
+		<LoginContext value={{ formType, setFormType }}>
 			{ children }
 		</LoginContext>
 	);

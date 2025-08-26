@@ -47,7 +47,7 @@ const TrackingDetails = () => {
 				<div className="text-center p-8 bg-white rounded-xl shadow-sm max-w-md">
 					<Package className="mx-auto text-gray-400 h-16 w-16 mb-4" />
 					<h1 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
-					<p className="text-gray-600 mb-6">We couldn't find an order with ID #{orderId}</p>
+					<p className="text-gray-600 mb-6">We couldn't find an order with ID #{id}</p>
 					<button
 						onClick={() => window.history.back()}
 						className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

@@ -4,7 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import {Link} from "react-router-dom";
 
 const Profile = () => {
-	const { setShowLoginForm } = useLoginContext();
+	const { setFormType } = useLoginContext();
 	const { auth, handleLogout } = useAuth();
 
 	return (
@@ -50,7 +50,7 @@ const Profile = () => {
 								Sign in to your <span className="font-semibold text-gray-800">Drip UK</span> account
 							</p>
 							<button
-								onClick={() => setShowLoginForm(true)}
+								onClick={() => setFormType("LOGIN")}
 								className="w-full mt-3 bg-black hover:bg-gray-800 text-white py-2 rounded-lg font-medium transition-all"
 							>
 								Sign In

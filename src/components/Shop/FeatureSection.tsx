@@ -14,9 +14,9 @@ export default function FeatureSection() {
 	return (
 		<div className="min-h-[500px] w-full flex flex-col-reverse">
 			{/* Top features */}
-			<div className="flex justify-center gap-12 py-6 border-b border-gray-200">
+			<div className="flex justify-center gap-12 py-6">
 				{topFeatures.map((f, idx) => (
-					<div key={idx} className="flex items-center gap-2 text-[#8B6B2E]">
+					<div key={idx} className="flex items-center gap-2 text-black text-2xl">
 						<span className="text-2xl">{f.icon}</span>
 						<span className="uppercase font-medium tracking-wide">
 							{f.text}

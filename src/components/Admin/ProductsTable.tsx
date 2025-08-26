@@ -1,6 +1,9 @@
 import {Package, Edit, Trash2, MoreVertical} from "lucide-react";
 import type {ProductsType} from "../../types/ProductsType";
 import {useDeleteProduct} from "../../hooks/Queries";
+import {useState} from "react";
+import {createPortal} from "react-dom";
+import Modal from "../Modal";
 
 type propsType = {
 	filteredProducts: ProductsType[] | undefined,
@@ -9,6 +12,9 @@ type propsType = {
 
 const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 	const { mutate: deleteProduct, isPending } = useDeleteProduct();
+	const [confirmDelete, setConfirmDelete] = useState(false);
+	const [productToDelete, setProductToDelete] = useState<number | undefined>(undefined);
+
 	return (
 		<div className="min-h-screen bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200">
 			<div className="overflow-x-auto">
@@ -67,7 +73,10 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 											<Edit size={16} />
 										</button>
 										<button
-											onClick={() => deleteProduct(product.id)}
+											onClick={() => {
+												setConfirmDelete(true);
+												setProductToDelete(product.id);
+											}}
 										   	className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
 											<Trash2 size={16} />
 										</button>
@@ -89,6 +98,22 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 					<p className="text-sm text-gray-400">Try adjusting your search or filter</p>
 				</div>
 			)}
+
+			{
+				createPortal(
+					<Modal 
+						condition={confirmDelete ? true : false && productToDelete}
+						title="Confirm Delete" description="Do you really want to delete this product ?" 
+						onClose={() => setConfirmDelete(false)}
+						handleMainSubmit={() => {
+							if (productToDelete) {
+							   	deleteProduct(productToDelete);
+							}
+						}}
+					/>,
+				   	document.body
+				)
+			}
 		</div>
 	);
 };

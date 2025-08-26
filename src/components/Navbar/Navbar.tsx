@@ -1,4 +1,4 @@
-import {useEffect, useState, type ReactNode} from "react";
+import {useState, type ReactNode} from "react";
 import {CiSearch} from "react-icons/ci";
 import Profile from "./Profile";
 import Cart from "./Cart";
@@ -7,10 +7,8 @@ import {Link} from "react-router-dom";
 import {useAuth} from "../../contexts/AuthContext";
 
 const Navbar = (): ReactNode => {
-
 	const [search, setSearch] = useState("");
 	const { auth } = useAuth();
-
 	return (
 		<nav className="flex justify-between items-center border-b border-gray-300 px-20 h-[90px] fixed w-full bg-white z-90">
 			<div className="relative flex items-center gap-18">

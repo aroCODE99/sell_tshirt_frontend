@@ -1,19 +1,19 @@
-import { jwtDecode } from "jwt-decode";
-import { act, createContext, useContext, useEffect, useReducer, type ReactNode } from "react";
-import { API } from "../utilities/axiosInterceptor";
+import {jwtDecode} from "jwt-decode";
+import {createContext, useContext, useEffect, useReducer, type ReactNode} from "react";
+import {API} from "../utilities/axiosInterceptor";
 import axios from "axios";
 import {toast} from "react-toastify";
 
 type ActionType =
-	| { type: "LOGIN"; payload: { token: string, roles: RoleType[], userEmail: string | undefined, username: string | undefined, isAdmin: boolean } }
-	| { type: "CHANGE_DETAILS", payload: { roles: RoleType[], userEmail: string | undefined , username: string | undefined } }
-	| { type: "LOGOUT" }
-	| { type: "IS_ADMIN", payload: boolean }
-	| { type: "ERROR", error: string }
-	| { type: "CHANGE_TOKEN", payload: string }
-	| { type: "CHANGE_LOADING", payload: boolean }
+	| {type: "LOGIN"; payload: {token: string, roles: RoleType[], userEmail: string | undefined, username: string | undefined, isAdmin: boolean}}
+	| {type: "CHANGE_DETAILS", payload: {roles: RoleType[], userEmail: string | undefined, username: string | undefined}}
+	| {type: "LOGOUT"}
+	| {type: "IS_ADMIN", payload: boolean}
+	| {type: "ERROR", error: string}
+	| {type: "CHANGE_TOKEN", payload: string}
+	| {type: "CHANGE_LOADING", payload: boolean}
 
-type jwtPayload = {
+export type jwtPayload = {
 	sub: string,
 	username: string,
 	roles: RoleType[],
@@ -27,9 +27,9 @@ type RoleType = {
 type AuthContextType = {
 	auth: AuthStateType,
 	authDispatch: React.Dispatch<ActionType>,
-	handleRegisterUser: () => Promise<void>
-	handleLogin: (loginData: { email: string; password: string }) => Promise<void>,
+	handleLogin: (loginData: {email: string; password: string}) => Promise<void>,
 	handleLogout: () => void,
+	isAdmin: (roles: RoleType[]) => boolean
 }
 
 type AuthStateType = {
@@ -45,7 +45,7 @@ type AuthStateType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({children}: {children: ReactNode}) => {
 
 	const initialState: AuthStateType = {
 		token: null,
@@ -72,29 +72,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 					username: action.payload.username,
 					userRoles: action.payload.roles,
 					isAdmin: action.payload.isAdmin
-			};
+				};
 			case "LOGOUT":
-				return { 
-				...state,
-				loading: false,
-				isAuthenticated: false,
-				token: null,  
-				username: undefined,
-				isAdmin: false,
-				error: undefined,
-				userRoles: []
-			}; 
+				return {
+					...state,
+					loading: false,
+					isAuthenticated: false,
+					token: null,
+					username: undefined,
+					isAdmin: false,
+					error: undefined,
+					userRoles: []
+				};
 			case "IS_ADMIN":
-				return { ...state, isAdmin: action.payload }
+				return {...state, isAdmin: action.payload}
 			case "ERROR":
-				return { ...state, error: action.error }
+				return {...state, error: action.error}
 			case "CHANGE_TOKEN": // now do i really need this 
-				return { ...state, token: action.payload }
+				return {...state, token: action.payload}
 			case "CHANGE_DETAILS":
-				return { ...state, isAuthenticated: true, username: action.payload.username, 
-					userEmail: action.payload.userEmail, userRoles: action.payload.roles }
+				return {
+					...state, isAuthenticated: true, username: action.payload.username,
+					userEmail: action.payload.userEmail, userRoles: action.payload.roles
+				}
 			case "CHANGE_LOADING":
-				return { ...state, loading: action.payload }
+				return {...state, loading: action.payload}
 			default:
 				return state;
 		}
@@ -102,12 +104,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const [auth, authDispatch] = useReducer(authReducer, initialState);
 
-	const handleLogin = async (loginData: { email: string; password: string }) => {
-		authDispatch({ type: "CHANGE_LOADING", payload: true });
+	console.log(auth);
+
+	const isAdmin = (roles: RoleType[]) => {
+		return roles.some(r => r.authority === "ADMIN");
+	}
+
+	const handleLogin = async (loginData: {email: string; password: string}) => {
+		authDispatch({type: "CHANGE_LOADING", payload: true});
 
 		const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, loginData, {
 			withCredentials: true,
-			headers: { "Content-Type": "application/json" }
+			headers: {"Content-Type": "application/json"}
 		});
 
 		const token = res.data.token;
@@ -116,20 +124,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		const jwtClaims = jwtDecode<jwtPayload>(token);
 		const isAdmin = jwtClaims.roles.some(r => r.authority === "ADMIN");
 
-		if (isAdmin) { 
+		if (isAdmin) {
 			localStorage.setItem("isAdmin", isAdmin.toString());
 		}
 
 		authDispatch({
 			type: "LOGIN",
-			payload: { token, roles: jwtClaims.roles, username: jwtClaims.username, userEmail: jwtClaims.sub, isAdmin  }
+			payload: {token, roles: jwtClaims.roles, username: jwtClaims.username, userEmail: jwtClaims.sub, isAdmin}
 		});
 	};
 
 	const handleLogout = async () => {
-		console.log("clicking the logout");
 		localStorage.removeItem("jwt");
-		authDispatch({ type: "LOGOUT" });
+		authDispatch({type: "LOGOUT"});
 		await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, {
 			withCredentials: true,
 		});
@@ -137,17 +144,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		toast.error("user logged out");
 	};
 
-	const handleRegisterUser = async () => { };
-
 	useEffect(() => {
 		const token = localStorage.getItem("jwt");
 		if (token) {
 			const claims = jwtDecode<jwtPayload>(token);
 			const isAdmin = claims.roles.some(role => role.authority === "ADMIN");
-			if (isAdmin) { 
+			if (isAdmin) {
 				localStorage.setItem("isAdmin", isAdmin.toString());
 			}
-			authDispatch({ type: "LOGIN", payload: { token, userEmail: claims.sub, username: claims.username, roles: claims.roles, isAdmin } });
+			authDispatch({type: "LOGIN", payload: {token, userEmail: claims.sub, username: claims.username, roles: claims.roles, isAdmin}});
 		}
 	}, []);
 
@@ -160,14 +165,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				return config;
 			},
 			error => {
-				authDispatch({ type: "ERROR", error: error.message });
+				authDispatch({type: "ERROR", error: error.message});
 				return Promise.reject(error);
 			}
 		);
 
 		const responseInterceptor = API.interceptors.response.use(
 			res => res,
-				async error => {
+			async error => {
 				const originalRequest = error.config;
 				console.log("this is the interceptor");
 				if (error.response?.status === 401 && !originalRequest._retry) {
@@ -176,22 +181,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 						const res = await axios.post(
 							`${apiUrl}/auth/getAccessToken`,
 							{},
-							{ withCredentials: true }
+							{withCredentials: true}
 						);
 
-						const { token } = res.data;
+						const {token} = res.data;
 						localStorage.setItem("jwt", token);
 
 						const claims = jwtDecode<jwtPayload>(token);
 						const isAdmin = claims.roles.some(role => role.authority === "ADMIN");
 						console.log(isAdmin);
-						authDispatch({ type: "LOGIN", payload: { token, userEmail: claims.sub, username: claims.username, roles: claims.roles, isAdmin } });
+						authDispatch({type: "LOGIN", payload: {token, userEmail: claims.sub, username: claims.username, roles: claims.roles, isAdmin}});
 						API.defaults.headers["Authorization"] = `Bearer ${token}`;
 					} catch (e) {
 						localStorage.removeItem("jwt");
 						localStorage.removeItem("isAdmin");
-						await axios.post(`${apiUrl}/auth/logout`, {}, { withCredentials: true });
-						authDispatch({ type: "LOGOUT" })
+						await axios.post(`${apiUrl}/auth/logout`, {}, {withCredentials: true});
+						authDispatch({type: "LOGOUT"})
 						return Promise.reject(e);
 					}
 				}
@@ -206,7 +211,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	}, [auth.token]);
 
 	return (
-		<AuthContext.Provider value={{ auth, authDispatch, handleLogin, handleLogout, handleRegisterUser }}>
+		<AuthContext.Provider value={{auth, authDispatch, handleLogin, handleLogout, isAdmin}}>
 			{children}
 		</AuthContext.Provider>
 	);

@@ -3,7 +3,6 @@ import Footer from "./Footer";
 import {Outlet} from "react-router-dom";
 import CartSideBarToggle from "./Navbar/CardSideBarToggle";
 import {useProducts} from "../hooks/Queries";
-import LoginModal from "./Login/LoginModal";
 
 const Layout = () => {
 	const { error } = useProducts();

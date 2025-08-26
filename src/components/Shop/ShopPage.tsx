@@ -42,7 +42,7 @@ const ShopPage = () => {
 		return res
 	}, [products, filters.sortByCategory, filters.sortByColor, filters.sortByPrice]);
 
-	if (error?.message === "SERVER_ERROR") {
+	if (error?.message === "Network Error") {
 		return <ServerError />
 	}
 
@@ -57,7 +57,6 @@ const ShopPage = () => {
 						: <MainDisplayProductsSkeleton />
 					}
 				</div>
-				<CartSideBar />
 			</div>
 		</>
 	);
