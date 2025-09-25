@@ -1,11 +1,11 @@
-import { IoPersonSharp } from "react-icons/io5";
-import { useLoginContext } from "../../contexts/LoginContext";
-import { useAuth } from "../../contexts/AuthContext";
+import {IoPersonSharp} from "react-icons/io5";
+import {useLoginContext} from "../../contexts/LoginContext";
+import {useAuth} from "../../contexts/AuthContext";
 import {Link} from "react-router-dom";
 
 const Profile = () => {
-	const { setFormType } = useLoginContext();
-	const { auth, handleLogout } = useAuth();
+	const {setFormType} = useLoginContext();
+	const {auth, handleLogout} = useAuth();
 
 	return (
 		<div className="relative h-full flex items-center group">
@@ -26,13 +26,24 @@ const Profile = () => {
 					</h2>
 
 					{/* Orders Link */}
-					{ auth.isAuthenticated && <Link to={"/shop/orders"}>
-						<button
-							className="mt-4 w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
-						>
-							My Orders
-						</button>
-					</Link> }
+					{auth.isAuthenticated &&
+						<>
+							<Link to={"/shop/orders"}>
+								<button
+									className="mt-4 w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+								>
+									My Orders
+								</button>
+							</Link>
+							<Link to={"/admin/dashboard"}>
+								<button
+									className="mt-4 w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+								>
+									Admin
+								</button>
+							</Link>
+						</>
+					}
 
 					<hr className="my-4" />
 

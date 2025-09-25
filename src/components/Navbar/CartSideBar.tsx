@@ -30,7 +30,7 @@ const CartSideBar = () => {
 	const calculateTotal = () => {
 		if (!cart) return 0;
 		return Object.values(cart).reduce((total, item) => {
-			return total + (item.price * item.quantity);
+			return total + (item.discountedPrice * item.quantity);
 		}, 0);
 	};
 	
@@ -103,22 +103,22 @@ const CartSideBar = () => {
 	}, [cartState.isCartSidebarOpen]);
 
 	// Close cart when clicking outside
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				sideBarRef.current &&
-				!sideBarRef.current.contains(event.target as Node) &&
-				cartState.isCartSidebarOpen
-			) {
-				closeCart();
-			}
-		};
+	// useEffect(() => {
+	// 	const handleClickOutside = (event: MouseEvent) => {
+	// 		if (
+	// 			sideBarRef.current &&
+	// 			!sideBarRef.current.contains(event.target as Node) &&
+	// 			cartState.isCartSidebarOpen
+	// 		) {
+	// 			closeCart();
+	// 		}
+	// 	};
 
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [cartState.isCartSidebarOpen, closeCart]);
+	// 	document.addEventListener("mousedown", handleClickOutside);
+	// 	return () => {
+	// 		document.removeEventListener("mousedown", handleClickOutside);
+	// 	};
+	// }, [cartState.isCartSidebarOpen, closeCart]);
 
 	// Close on escape key
 	useEffect(() => {
@@ -141,7 +141,7 @@ const CartSideBar = () => {
 					<>
 						{/* Backdrop - Fixed opacity as requested */}
 						<motion.div
-							className="fixed inset-0 bg-black z-40"
+							className="fixed inset-0 top-20 bg-black z-40"
 							style={{opacity: 0.2}}
 							initial={{opacity: 0}}
 							animate={{opacity: 0.2}}

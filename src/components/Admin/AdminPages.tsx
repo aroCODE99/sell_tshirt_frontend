@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {ShoppingCart, Users, Search, Filter} from "lucide-react";
-import {useCreateProduct, useMakeFeatureProduct, useProducts} from "../../hooks/Queries";
+import {useCreateProduct, useMakeFeatureProduct, useProducts, useUpdateProduct} from "../../hooks/Queries";
 import {createPortal} from "react-dom";
 import type {ProductsType} from "../../types/ProductsType";
 import CreateProductModal from "./CreateProductModal";
@@ -9,12 +9,14 @@ import {ClipLoader} from "react-spinners";
 import AdminPageHeader from "./AdminPageHeader";
 import ProductsTable from "./ProductsTable";
 import Modal from "../Modal";
+import type {ProductFormType} from "../../types/FormDataTypes";
 
 const AdminPage = () => {
 	const {data: products, isLoading} = useProducts();
 	const [activeTab, setActiveTab] = useState("products");
 	const {mutate: makeFeatureProduct} = useMakeFeatureProduct();
 	const {mutate: createProduct, isPending} = useCreateProduct();
+	const {mutate: updateProduct} = useUpdateProduct();
 
 	const [showModal, setShowModal] = useState(false);
 	const [selectedProduct, setSelectedProduct] = useState<ProductsType | null>(
@@ -23,15 +25,28 @@ const AdminPage = () => {
 	const [showCreateProductModal, setShowCreateProductModal] = useState(false);
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const [form, setForm] = useState({
+	const [form, setForm] = useState<ProductFormType>({
 		name: "",
 		price: "",
 		description: "",
 		categoryType: "",
 		color: "",
-		sizes: [] as string[],
+		sizes: {},
+		discount: 0
 	});
 	const [file, setFile] = useState<File | null>(null);
+
+	const clearForm = () => {
+		setForm({
+			name: "",
+			description: "",
+			price: "",
+			discount: 0,
+			categoryType: "",
+			color: "",
+			sizes: {},
+		})
+	}
 
 	const handleFeaturedClick = (product: ProductsType) => {
 		setSelectedProduct(product);
@@ -56,6 +71,10 @@ const AdminPage = () => {
 
 	const handleAddProduct = (formData: any) => {
 		createProduct(formData);
+	}
+
+	const handleUpdateProduct = (formData: any) => {
+		updateProduct(formData);
 	}
 
 	if (isLoading || isPending)
@@ -98,7 +117,12 @@ const AdminPage = () => {
 						</div>
 
 						{/* Product Table */}
-						<ProductsTable filteredProducts={filteredProducts} handleFeaturedClick={handleFeaturedClick} />
+						<ProductsTable
+							filteredProducts={filteredProducts}
+							handleFeaturedClick={handleFeaturedClick}
+							setShowCreateProductModal={setShowCreateProductModal}
+							setForm={setForm}
+						/>
 					</div>
 				)}
 
@@ -128,31 +152,33 @@ const AdminPage = () => {
 			</main>
 
 			{/* Confirm Modal */}
-			{showModal &&
-				createPortal(
-					<Modal
-						condition={showModal}
-						title="Change Featured Status"
-						description={`Do you want to ${selectedProduct?.featured ? "remove" : "mark"} ${selectedProduct?.name} as a Featured Product?`}
-						onClose={() => setShowModal(false)}
-						handleMainSubmit={confirmFeaturedChange}
-					/>,
-					document.body
+			{createPortal(
+				<Modal
+					condition={showModal}
+					title="Change Featured Status"
+					description={`Do you want to ${selectedProduct?.featured ? "remove" : "mark"} ${selectedProduct?.name} as a Featured Product?`}
+					onClose={() => {
+						setShowModal(false)
+					}}
+					handleMainSubmit={confirmFeaturedChange}
+				/>,
+				document.body
 			)}
 
-			{showCreateProductModal &&
-				createPortal(
-					<CreateProductModal
-						showCreateProductModal={showCreateProductModal}
-						onClose={() => setShowCreateProductModal(false)}
-						onSubmit={(form: any) => handleAddProduct(form)}
-						form={form}
-						setForm={setForm}
-						file={file}
-						setFile={setFile}
-					/>,
-					document.body
-				)}
+			{createPortal(
+				<CreateProductModal
+					showCreateProductModal={showCreateProductModal}
+					onClose={() => {
+						if (form.editMode) clearForm();
+						setShowCreateProductModal(false)
+					}}
+					onSubmit={(form: any) => handleAddProduct(form)}
+					onUpdate={(form: any) => handleUpdateProduct(form)}
+					form={form}
+					setForm={setForm}
+					file={file}
+					setFile={setFile}
+				/>, document.body)}
 
 		</div>
 	);

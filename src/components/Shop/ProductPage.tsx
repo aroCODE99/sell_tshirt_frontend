@@ -135,7 +135,8 @@ const ProductPage = () => {
 
 								{/* Price */}
 								<div>
-									<div className="text-3xl font-bold text-gray-900">₹{activeProduct.price}</div>
+									<div className="text-3xl font-bold text-gray-900 ">₹{activeProduct.discountedPrice}  /   
+										<span className="line-through"> {activeProduct.price}</span></div>
 									<p className="text-sm text-gray-500 mt-1">Inclusive of all taxes</p>
 								</div>
 

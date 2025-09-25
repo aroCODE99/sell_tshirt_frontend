@@ -4,16 +4,41 @@ import {useDeleteProduct} from "../../hooks/Queries";
 import {useState} from "react";
 import {createPortal} from "react-dom";
 import Modal from "../Modal";
+import type {ProductFormType} from "../../types/FormDataTypes";
 
 type propsType = {
 	filteredProducts: ProductsType[] | undefined,
 	handleFeaturedClick: (product: ProductsType) => void
+	setShowCreateProductModal: React.Dispatch<React.SetStateAction<boolean>>
+	setForm: React.Dispatch<React.SetStateAction<ProductFormType>>
 }
 
-const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
-	const { mutate: deleteProduct, isPending } = useDeleteProduct();
+const ProductsTable = ({filteredProducts, handleFeaturedClick,
+	setShowCreateProductModal, setForm}: propsType) => {
+	const {mutate: deleteProduct, isPending} = useDeleteProduct();
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [productToDelete, setProductToDelete] = useState<number | undefined>(undefined);
+
+	const handleEditForm = (product: ProductsType) => {
+		const sizesRecord = Object.fromEntries(
+			product.productVariants.map(({size, quantity}) =>
+				[size, quantity]
+			));
+		console.log(sizesRecord);
+		setForm({
+			id: String(product.id),
+			name: product.name,
+			description: product.description,
+			price: String(product.price),
+			discount: 0,
+			sizes: sizesRecord,
+			color: product.color,
+			categoryType: product.category,
+			editMode: true,
+			prevImg: product.imgPath
+		})
+		setShowCreateProductModal(true);
+	};
 
 	return (
 		<div className="min-h-screen bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200">
@@ -23,6 +48,7 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 						<tr className="bg-gray-50 text-sm font-medium text-gray-500 uppercase tracking-wider">
 							<th className="px-6 py-4">Product</th>
 							<th className="px-6 py-4">Price</th>
+							<th className="px-6 py-4">Discounted Price</th>
 							<th className="px-6 py-4">Stock</th>
 							<th className="px-6 py-4">Featured</th>
 							<th className="px-6 py-4 text-right">Actions</th>
@@ -51,6 +77,7 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 									</div>
 								</td>
 								<td className="px-6 py-4 font-medium">₹{product.price}</td>
+								<td className="px-6 py-4 font-medium">₹{product.discountedPrice}</td>
 								<td className="px-6 py-4">
 									<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
 										50 in stock
@@ -69,7 +96,9 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 								</td>
 								<td className="px-6 py-4">
 									<div className="flex justify-end gap-2">
-										<button className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+										<button
+											onClick={() => handleEditForm(product)}
+											className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
 											<Edit size={16} />
 										</button>
 										<button
@@ -77,7 +106,7 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 												setConfirmDelete(true);
 												setProductToDelete(product.id);
 											}}
-										   	className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+											className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
 											<Trash2 size={16} />
 										</button>
 										<button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition">
@@ -101,17 +130,17 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 
 			{
 				createPortal(
-					<Modal 
+					<Modal
 						condition={confirmDelete ? true : false && productToDelete}
-						title="Confirm Delete" description="Do you really want to delete this product ?" 
+						title="Confirm Delete" description="Do you really want to delete this product ?"
 						onClose={() => setConfirmDelete(false)}
 						handleMainSubmit={() => {
 							if (productToDelete) {
-							   	deleteProduct(productToDelete);
+								deleteProduct(productToDelete);
 							}
 						}}
 					/>,
-				   	document.body
+					document.body
 				)
 			}
 		</div>

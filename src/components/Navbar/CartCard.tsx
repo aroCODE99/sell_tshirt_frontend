@@ -40,7 +40,7 @@ const CartCard = ({cp}: {cp: [string, CartProduct]}) => {
 				</Link>
 
 				<span className={`text-sm mt-0.5 ${isDeleted ? "text-gray-400" : "text-gray-500"}`}>
-					₹ {product.price}
+					₹ {product.discountedPrice} / <span className="line-through">{product.price}</span>
 				</span>
 
 				{/* Size Display */}

@@ -18,11 +18,11 @@ type cartType = {
 
 type cartMapType = Record<number, CartProduct>;
 
-
 const productById = (products: ProductsType[]) => {
 	const productsMap: Record<number, ProductsType> = {};
 	products.forEach((product) => {
 		if (!product.deleted) productsMap[product.id] = {...product};
+		if (!product.discountedPrice) product.discountedPrice = product.price;
 	});
 	return productsMap;
 };
@@ -35,13 +35,12 @@ const cartById = (cart: cartType) => {
 	return cartMap;
 }
 
-export const useProducts = () => {
+export const useProducts = (doesSelect?: boolean) => {
 	const productsApiUrl = "/api/products";
 	return useQuery({
 		queryKey: ["products"],
 		queryFn: (): Promise<ProductsType[]> => API.get(productsApiUrl).then(res => res.data),
-		select: productById,
-
+		select: productById
 	})
 }
 
@@ -243,6 +242,26 @@ export const useCreateProduct = () => {
 		mutationFn: async (formData: any) => {
 			return API.post(
 				createProductUrl, formData,
+				{ 
+					headers: {
+						"Content-Type": "multipart/form-data"
+					}
+				}
+			);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({queryKey: ['products']})
+		}
+	});
+};
+
+export const useUpdateProduct = () => {
+	const queryClient = useQueryClient();
+	const updateProductUrl = "/api/admin/products";
+	return useMutation({
+		mutationFn: async (formData: any) => {
+			return API.put(
+				updateProductUrl, formData,
 				{ 
 					headers: {
 						"Content-Type": "multipart/form-data"

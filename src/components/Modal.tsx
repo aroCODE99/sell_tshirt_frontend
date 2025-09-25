@@ -1,31 +1,43 @@
-type propsType = {
+import {motion} from "framer-motion";
+
+type PropsType = {
 	condition: boolean;
 	title: string;
 	description: string;
 	onClose: () => void;
-	handleMainSubmit: any
+	handleMainSubmit: () => void;
 };
 
-const Modal = ({condition, title, description, onClose, handleMainSubmit}: propsType) => {
+const Modal = ({condition, title, description, onClose, handleMainSubmit}: PropsType) => {
+	if (!condition) return null;
 
 	const wrapperHandleMainSubmit = () => {
 		handleMainSubmit();
 		onClose();
 	};
 
-	return condition &&
-		<div className="z-99 fixed inset-0 flex items-center justify-center">
+	return (
+		<motion.div
+			className="fixed inset-0 z-99 flex items-center justify-center"
+			initial={{opacity: 0}}
+			animate={{opacity: 1}}
+			exit={{opacity: 0}}
+			transition={{duration: 0.3}}
+		>
+			{/* Overlay */}
+			<motion.div
+				className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+				initial={{opacity: 0}}
+				animate={{opacity: 1}}
+				exit={{opacity: 0}}
+				transition={{duration: 0.3}}
+				onClick={onClose}
+			/>
 
-			<div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-
-			<div className="relative bg-white rounded-2xl p-6 w-96 shadow-2xl transform transition-all duration-200 animate-fadeIn">
-				<h2 className="text-lg font-bold mb-4 text-gray-900 border-b pb-2">
-					{title}
-				</h2>
-
-				<p className="mb-6 text-gray-700">
-					{description}
-				</p>
+			{/* Modal Content */}
+			<div className="relative bg-white rounded-2xl p-6 w-96 shadow-2xl transform transition-all duration-200">
+				<h2 className="text-lg font-bold mb-4 text-gray-900 border-b pb-2">{title}</h2>
+				<p className="mb-6 text-gray-700">{description}</p>
 
 				<div className="flex justify-end gap-3">
 					<button
@@ -42,24 +54,9 @@ const Modal = ({condition, title, description, onClose, handleMainSubmit}: props
 					</button>
 				</div>
 			</div>
-
-			<style>{`
-					@keyframes fadeIn {
-						from {
-							opacity: 0;
-							transform: scale(0.95);
-						}
-						to {
-							opacity: 1;
-							transform: scale(1);
-						}
-					}
-					.animate-fadeIn {
-						animation: fadeIn 0.2s ease-out forwards;
-					}
-					`}</style>
-		</div>
+		</motion.div>
+	);
 };
 
-
 export default Modal;
+
