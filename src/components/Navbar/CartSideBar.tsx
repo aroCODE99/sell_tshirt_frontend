@@ -44,7 +44,7 @@ const CartSideBar = () => {
 				onSuccess: () => {
 					setConfirmCheckout(false);
 					refetch();
-					navigate("/shop/checkout");
+					navigate("/checkout");
 					toast.success("Order placed successfully!");
 				},
 				onError: (error) => {

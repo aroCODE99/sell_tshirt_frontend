@@ -59,6 +59,7 @@ const MyOrders = () => {
 	// Get status count for filter options
 	const statusCounts = {
 		all: orders.length,
+		placed: orders.filter(order => order.trackingDetails?.status?.toLowerCase() === "placed").length,
 		pending: orders.filter(order => order.trackingDetails?.status?.toLowerCase() === "pending").length,
 		shipped: orders.filter(order => order.trackingDetails?.status?.toLowerCase() === "shipped").length,
 		delivered: orders.filter(order => order.trackingDetails?.status?.toLowerCase() === "delivered").length,

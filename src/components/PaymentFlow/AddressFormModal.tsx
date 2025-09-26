@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { HiOutlineX } from "react-icons/hi";
-import type { addressType } from "../../contexts/AuthContext";
 import {useSaveAddress} from "../../hooks/Queries";
 import {toast} from "react-toastify";
+import type {addressType} from "../../types/UserType";
 
 type AddressFormModalType = {
    	setShowAddressForm: React.Dispatch<React.SetStateAction<boolean>> 

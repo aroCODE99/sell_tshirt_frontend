@@ -19,6 +19,7 @@ import TrackingDetails from "./components/orders/TrackingDetails.tsx";
 import OauthRedirect from "./components/OauthRedirect.tsx";
 import ShowOrders from "./components/Admin/ShowOrders.tsx";
 import {AdminContextProvider} from "./contexts/AdminContext.tsx";
+import AdminProductPage from "./components/Admin/AdminProductPage.tsx";
 
 const AdminPage = React.lazy(() => import("./components/Admin/AdminPages.tsx"));
 
@@ -27,42 +28,51 @@ const App = () => {
 		<>
 			<LoginProvider>
 				<CartContextProvider>
-					<LoginModal />
-					<Routes>
-						<Route element={<Layout />}>
-							<Route path="/" element={<FilterProvider><HomePage /></FilterProvider>} />
-							<Route path="/shop" element={
-								<FilterProvider>
-									<ShopPage />
-								</FilterProvider>
-							}
-							/>
-							<Route path="/product/:id" element={<ProductPage />} />
-							<Route element={<PrivateRoute />}>
-								<Route path="/shop/checkout" element={<CheckOutPage />} />
-								<Route path="/shop/checkout/summary" element={<CheckoutSummary />} />
-								<Route path="/shop/orders" element={<MyOrders />} />
-								<Route path="/orders/track/:id" element={<TrackingDetails />} />
-								<Route path="/admin/*" element={<IsAdmin />}>
-									<Route path="dashboard/products" element={
-										<AdminContextProvider>
-											<AdminPage />
-										</AdminContextProvider>
-									} />
+					<AdminContextProvider> {/* Move to top level */}
+						<LoginModal />
+						<Routes>
+							{/* Public Routes with Layout */}
+							<Route path="/" element={<Layout />}>
+								<Route index element={
+									<FilterProvider>
+										<HomePage />
+									</FilterProvider>
+								} />
 
-									<Route path="dashboard/orders" element={
-										<AdminContextProvider>
-											<ShowOrders />
-										</AdminContextProvider>
+								<Route path="shop">
+									<Route index element={
+										<FilterProvider>
+											<ShopPage />
+										</FilterProvider>
 									} />
+									<Route path="product/:id" element={<ProductPage />} />
+								</Route>
+
+								{/* Protected Routes */}
+								<Route element={<PrivateRoute />}>
+									<Route path="checkout" element={<CheckOutPage />} />
+									<Route path="checkout/summary" element={<CheckoutSummary />} />
+									<Route path="orders">
+										<Route index element={<MyOrders />} />
+										<Route path="track/:id" element={<TrackingDetails />} />
+									</Route>
+
+									{/* Admin Routes */}
+									<Route path="admin" element={<IsAdmin />}>
+										<Route element={<AdminPage />}> 
+											<Route path="products" element={<AdminProductPage />} />
+											<Route path="orders" element={<ShowOrders />} />
+										</Route>
+									</Route>
 								</Route>
 							</Route>
-						</Route>
 
-						{/* so the real problem is that we are not getting hit this callback */}
-						<Route path="paymentCallback" element={<PaymentSuccess />} />
-						<Route path="/oauth/redirect" element={<OauthRedirect />} />
-					</Routes>
+							<Route path="/paymentCallback" element={<PaymentSuccess />} />
+							<Route path="/oauth/redirect" element={<OauthRedirect />} />
+
+							<Route path="*" element={<div>404 - Page Not Found</div>} />
+						</Routes>
+					</AdminContextProvider>
 				</CartContextProvider>
 			</LoginProvider>
 
@@ -72,11 +82,3 @@ const App = () => {
 };
 
 export default App;
-
-
-// now let's work on the filtering 
-// now let's work on the product Page
-// working with the admin stuff
-// now let's work on storing the images
-
-// working with the addToCart functionality

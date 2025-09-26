@@ -1,12 +1,15 @@
 import {Plus, Package, BarChart3} from "lucide-react";
-import type {ProductsType} from "../../types/ProductsType";
+import {useProducts} from "../../hooks/Queries";
+import {useAdminContext} from "../../contexts/AdminContext";
 
-type PropsType = {
-	products: Record<number, ProductsType> | undefined,
-	setShowCreateProductModal: React.Dispatch<React.SetStateAction<boolean>>
-}
+const AdminPageHeader = () => {
+	const { data: products } = useProducts();
+	const { dispatch } = useAdminContext();
 
-const AdminPageHeader = ({products, setShowCreateProductModal}: PropsType) => {
+	const handleModal = (payload: boolean) => {
+		dispatch({ type: "SET_SHOW_CREATE_MODAL_FORM", payload });
+	}
+
 	return (
 		<>
 			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -15,7 +18,7 @@ const AdminPageHeader = ({products, setShowCreateProductModal}: PropsType) => {
 					<p className="text-gray-600 mt-1">Manage your product inventory and features</p>
 				</div>
 				<button
-					onClick={() => setShowCreateProductModal(true)}
+					onClick={() => handleModal(true)}
 					className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200"
 				>
 					<Plus size={18} /> Add Product

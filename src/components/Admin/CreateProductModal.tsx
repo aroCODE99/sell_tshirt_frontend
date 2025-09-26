@@ -8,20 +8,19 @@ import {useAdminContext} from "../../contexts/AdminContext";
 import {useEffect} from "react";
 
 type AddProductModalProps = {
-	showCreateProductModal: boolean;
 	onClose: () => void;
 	onSubmit: (formData: FormData) => void;
 	onUpdate: (formData: FormData) => void;
 };
 
 const CreateProductModal = ({
-	showCreateProductModal,
 	onClose,
 	onSubmit,
 	onUpdate,
 }: AddProductModalProps) => {
 
 	const {adminState, dispatch} = useAdminContext();
+	const showCreateProductModal = adminState.showCreateProductModal;
 	const form = adminState.form;
 	const file = adminState.file;
 	console.log(form);

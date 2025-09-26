@@ -9,12 +9,10 @@ import {useAdminContext} from "../../contexts/AdminContext";
 type propsType = {
 	filteredProducts: ProductsType[] | undefined,
 	handleFeaturedClick: (product: ProductsType) => void
-	setShowCreateProductModal: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 // let me analyze this if this is fixed 😊 
-const ProductsTable = ({filteredProducts, handleFeaturedClick,
-	setShowCreateProductModal}: propsType) => {
+const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 	const {mutate: deleteProduct, isPending} = useDeleteProduct();
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [productToDelete, setProductToDelete] = useState<number | undefined>(undefined);
@@ -41,7 +39,7 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick,
 				prevImg: product.imgPath
 			}
 		});
-		setShowCreateProductModal(true);
+		dispatch({type: "SET_SHOW_CREATE_MODAL_FORM", payload: false});
 	};
 
 	return (

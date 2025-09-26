@@ -28,14 +28,14 @@ const Profile = () => {
 					{/* Orders Link */}
 					{auth.isAuthenticated &&
 						<>
-							<Link to={"/shop/orders"}>
+							<Link to={"/orders"}>
 								<button
 									className="mt-4 w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
 								>
 									My Orders
 								</button>
 							</Link>
-							<Link to={"/admin/dashboard/products"}>
+							<Link to={"/admin/products"}>
 								<button
 									className="mt-4 w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
 								>

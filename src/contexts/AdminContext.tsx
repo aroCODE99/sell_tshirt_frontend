@@ -1,18 +1,25 @@
 import {createContext, useContext, useReducer} from "react";
 import type {ProductFormType} from "../types/FormDataTypes";
 import type {tabType} from "../types/AdminTypes";
-
-type initialStateType = {
-	activeTab: tabType,
-	form: ProductFormType,
-	file: File | null
-}
+import type {ProductsType} from "../types/ProductsType";
 
 type ActionType =
 	{type: "CHANGE_ACTIVE_TAB", payload: tabType} |
 	{type: "CLEAR_FORM", payload: ProductFormType} |
 	{type: "SET_FORM", payload: ProductFormType} |
-	{type: "SET_FILE", payload: File}
+	{type: "SET_FILE", payload: File} |
+	{type: "SET_SHOW_CREATE_MODAL_FORM", payload: boolean} |
+	{type: "SET_SHOW_FEATURED_MODAL", payload: boolean} |
+	{type: "SET_ACTIVE_PRODUCT", payload: ProductsType | null} 
+
+type initialStateType = {
+	activeTab: tabType,
+	form: ProductFormType,
+	file: File | null,
+	showCreateProductModal: boolean,
+	showFeatureModal: boolean,
+	activeProduct: ProductsType | null
+}
 
 type ContextType = {
 	adminState: initialStateType,
@@ -35,7 +42,10 @@ export const AdminContextProvider = ({children}: {children: React.ReactNode}) =>
 			sizes: {},
 			discount: 0
 		},
-		file: null
+		file: null,
+		showCreateProductModal: false,
+		showFeatureModal: false,
+		activeProduct: null
 	};
 
 	const reducerFunction = (state: initialStateType, action: ActionType): initialStateType => {
@@ -46,6 +56,14 @@ export const AdminContextProvider = ({children}: {children: React.ReactNode}) =>
 				return {...state, form: action.payload}
 			case "SET_FORM":
 				return {...state, form: action.payload}
+			case "SET_SHOW_CREATE_MODAL_FORM":
+				return {...state, showCreateProductModal: action.payload}
+			case "SET_SHOW_FEATURED_MODAL":
+				return {...state, showFeatureModal: action.payload}
+			case "SET_FILE":
+				return {...state, file: action.payload}
+			case "SET_ACTIVE_PRODUCT":
+				return {...state, activeProduct: action.payload}
 			default:
 				return {...state};
 		}
