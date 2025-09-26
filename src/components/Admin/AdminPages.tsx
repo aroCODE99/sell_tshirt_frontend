@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {ShoppingCart, Users, Search, Filter} from "lucide-react";
+import {Search, Filter} from "lucide-react";
 import {useCreateProduct, useMakeFeatureProduct, useProducts, useUpdateProduct} from "../../hooks/Queries";
 import {createPortal} from "react-dom";
 import type {ProductsType} from "../../types/ProductsType";
@@ -9,44 +9,26 @@ import {ClipLoader} from "react-spinners";
 import AdminPageHeader from "./AdminPageHeader";
 import ProductsTable from "./ProductsTable";
 import Modal from "../Modal";
-import type {ProductFormType} from "../../types/FormDataTypes";
+import {useAdminContext} from "../../contexts/AdminContext";
 
 const AdminPage = () => {
 	const {data: products, isLoading} = useProducts();
-	const [activeTab, setActiveTab] = useState("products");
 	const {mutate: makeFeatureProduct} = useMakeFeatureProduct();
 	const {mutate: createProduct, isPending} = useCreateProduct();
 	const {mutate: updateProduct} = useUpdateProduct();
 
 	const [showModal, setShowModal] = useState(false);
-	const [selectedProduct, setSelectedProduct] = useState<ProductsType | null>(
+
+	// i think this is ok here no move to the context
+	const [selectedProduct, setSelectedProduct] = useState<ProductsType | null>( 
 		null
 	);
-	const [showCreateProductModal, setShowCreateProductModal] = useState(false);
-	const [searchTerm, setSearchTerm] = useState("");
+	const [showCreateProductModal, setShowCreateProductModal] = useState(true);
+	const [searchTerm, setSearchTerm] = useState(""); 
 
-	const [form, setForm] = useState<ProductFormType>({
-		name: "",
-		price: "",
-		description: "",
-		categoryType: "",
-		color: "",
-		sizes: {},
-		discount: 0
-	});
-	const [file, setFile] = useState<File | null>(null);
-
-	const clearForm = () => {
-		setForm({
-			name: "",
-			description: "",
-			price: "",
-			discount: 0,
-			categoryType: "",
-			color: "",
-			sizes: {},
-		})
-	}
+	const { adminState, dispatch, clearForm } = useAdminContext();
+	const activeTab = adminState.activeTab;
+	const form = adminState.form;
 
 	const handleFeaturedClick = (product: ProductsType) => {
 		setSelectedProduct(product);
@@ -56,7 +38,6 @@ const AdminPage = () => {
 	const confirmFeaturedChange = () => {
 		if (selectedProduct) {
 			makeFeatureProduct(selectedProduct.id);
-			console.log(`Toggling featured status for: ${selectedProduct.name}`);
 		}
 		setSelectedProduct(null);
 	};
@@ -86,8 +67,10 @@ const AdminPage = () => {
 
 	return (
 		<div className="min-h-screen bg-gray-50 text-gray-800 flex">
+
 			{/* Sidebar */}
-			<AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+			{/* Fixed this */}
+			<AdminSidebar />
 
 			{/* Main Content */}
 			<main className="flex-1 p-6 lg:p-8">
@@ -117,38 +100,15 @@ const AdminPage = () => {
 						</div>
 
 						{/* Product Table */}
+						{/* this is also fixed i guess */}
 						<ProductsTable
 							filteredProducts={filteredProducts}
 							handleFeaturedClick={handleFeaturedClick}
 							setShowCreateProductModal={setShowCreateProductModal}
-							setForm={setForm}
 						/>
 					</div>
 				)}
 
-				{activeTab === "orders" && (
-					<div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-						<h2 className="text-2xl font-bold text-gray-900 mb-2">Orders</h2>
-						<p className="text-gray-600 mb-6">Manage and track customer orders</p>
-						<div className="text-center py-12">
-							<ShoppingCart className="mx-auto text-gray-300" size={48} />
-							<p className="mt-3 text-gray-500">No orders yet</p>
-							<p className="text-sm text-gray-400">Orders will appear here once customers start purchasing</p>
-						</div>
-					</div>
-				)}
-
-				{activeTab === "users" && (
-					<div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-						<h2 className="text-2xl font-bold text-gray-900 mb-2">Users</h2>
-						<p className="text-gray-600 mb-6">Manage customer accounts and permissions</p>
-						<div className="text-center py-12">
-							<Users className="mx-auto text-gray-300" size={48} />
-							<p className="mt-3 text-gray-500">No users found</p>
-							<p className="text-sm text-gray-400">User accounts will appear here</p>
-						</div>
-					</div>
-				)}
 			</main>
 
 			{/* Confirm Modal */}
@@ -165,6 +125,7 @@ const AdminPage = () => {
 				document.body
 			)}
 
+			{/* now this has to be fixed */}
 			{createPortal(
 				<CreateProductModal
 					showCreateProductModal={showCreateProductModal}
@@ -174,10 +135,6 @@ const AdminPage = () => {
 					}}
 					onSubmit={(form: any) => handleAddProduct(form)}
 					onUpdate={(form: any) => handleUpdateProduct(form)}
-					form={form}
-					setForm={setForm}
-					file={file}
-					setFile={setFile}
 				/>, document.body)}
 
 		</div>

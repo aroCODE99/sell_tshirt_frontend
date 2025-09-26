@@ -301,3 +301,12 @@ export const useDeleteProduct = () => {
 	})
 }
 
+// TODO: orgainze this api's
+// Orders api
+export const useGetAllOrders = (pageNo: number) => {
+	const getAllOrdersUrl = `api/admin/orders?page=${pageNo}`;
+	return useQuery({
+		queryKey: ["orders", pageNo],
+		queryFn: (): Promise<any> => API.get(getAllOrdersUrl).then(res => res.data)
+	})
+}

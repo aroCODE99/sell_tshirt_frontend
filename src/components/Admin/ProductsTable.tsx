@@ -4,39 +4,43 @@ import {useDeleteProduct} from "../../hooks/Queries";
 import {useState} from "react";
 import {createPortal} from "react-dom";
 import Modal from "../Modal";
-import type {ProductFormType} from "../../types/FormDataTypes";
+import {useAdminContext} from "../../contexts/AdminContext";
 
 type propsType = {
 	filteredProducts: ProductsType[] | undefined,
 	handleFeaturedClick: (product: ProductsType) => void
 	setShowCreateProductModal: React.Dispatch<React.SetStateAction<boolean>>
-	setForm: React.Dispatch<React.SetStateAction<ProductFormType>>
 }
 
+// let me analyze this if this is fixed 😊 
 const ProductsTable = ({filteredProducts, handleFeaturedClick,
-	setShowCreateProductModal, setForm}: propsType) => {
+	setShowCreateProductModal}: propsType) => {
 	const {mutate: deleteProduct, isPending} = useDeleteProduct();
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [productToDelete, setProductToDelete] = useState<number | undefined>(undefined);
+	const {dispatch} = useAdminContext();
 
 	const handleEditForm = (product: ProductsType) => {
 		const sizesRecord = Object.fromEntries(
 			product.productVariants.map(({size, quantity}) =>
 				[size, quantity]
 			));
-		console.log(sizesRecord);
-		setForm({
-			id: String(product.id),
-			name: product.name,
-			description: product.description,
-			price: String(product.price),
-			discount: 0,
-			sizes: sizesRecord,
-			color: product.color,
-			categoryType: product.category,
-			editMode: true,
-			prevImg: product.imgPath
-		})
+
+		// setting the form 
+		dispatch({
+			type: "SET_FORM", payload: {
+				id: String(product.id),
+				name: product.name,
+				description: product.description,
+				price: String(product.price),
+				discount: 0,
+				sizes: sizesRecord,
+				color: product.color,
+				categoryType: product.category,
+				editMode: true,
+				prevImg: product.imgPath
+			}
+		});
 		setShowCreateProductModal(true);
 	};
 

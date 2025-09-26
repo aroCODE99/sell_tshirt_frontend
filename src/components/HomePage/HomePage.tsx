@@ -53,12 +53,12 @@ const HomePage = () => {
 						className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${index === currentSlide ? "opacity-100" : "opacity-0"
 							}`}
 					>
+						<div className="absolute inset-0 bg-black/40" />
 						<img
 							src={slide.image}
 							alt="Hero Background"
 							className="w-full h-full object-cover"
 						/>
-						<div className="absolute inset-0 bg-black/40" />
 					</div>
 				))}
 

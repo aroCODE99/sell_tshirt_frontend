@@ -1,19 +1,17 @@
-import {motion, AnimatePresence, color} from "framer-motion";
+import {motion, AnimatePresence} from "framer-motion";
 import {Upload, Image as ImageIcon} from "lucide-react";
 import {sizings} from "../Shop/ProductPage";
 import type {ProductFormType} from "../../types/FormDataTypes";
 import CreateProductModalHeader from "./CreateProductModalHeader";
 import ProductModalSizeChange from "./ProductModalSizeChange";
+import {useAdminContext} from "../../contexts/AdminContext";
+import {useEffect} from "react";
 
 type AddProductModalProps = {
 	showCreateProductModal: boolean;
 	onClose: () => void;
 	onSubmit: (formData: FormData) => void;
 	onUpdate: (formData: FormData) => void;
-	form: ProductFormType;
-	file: File | null;
-	setForm: React.Dispatch<React.SetStateAction<any>>;
-	setFile: React.Dispatch<React.SetStateAction<File | null>>;
 };
 
 const CreateProductModal = ({
@@ -21,19 +19,30 @@ const CreateProductModal = ({
 	onClose,
 	onSubmit,
 	onUpdate,
-	form,
-	setForm,
-	file,
-	setFile,
 }: AddProductModalProps) => {
 
+	const {adminState, dispatch} = useAdminContext();
+	const form = adminState.form;
+	const file = adminState.file;
+	console.log(form);
+
+	useEffect(() => {
+		return () => {
+			if (form.prevImg && form.prevImg.startsWith('blob:')) {
+				URL.revokeObjectURL(form.prevImg);
+			}
+		};
+	}, [form.prevImg]);
+
+	// i think this will work 😊
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
 		const {name, value} = e.target;
-		setForm((prev: any) => ({...prev, [name]: value}));
+		dispatch({type: "SET_FORM", payload: {...form, [name]: value}});
 	};
 
 	const handleSizeChange = (selectedSize: string) => {
-		setForm((prev: ProductFormType) => {
+		console.log("Now again something is not working");
+		const getNewForm = (prev: ProductFormType) => {
 			const exists = Object.entries(prev.sizes ?? {}).find(([size, _]) =>
 				selectedSize === size
 			);
@@ -42,11 +51,13 @@ const CreateProductModal = ({
 				sizes: exists ? Object.fromEntries(Object.entries(prev.sizes ?? {}).filter(([size, _]) =>
 					size !== selectedSize)) : {...prev.sizes, [selectedSize]: 50}
 			};
-		});
+		};
+		const newForm = getNewForm(form);
+		dispatch({type: "SET_FORM", payload: newForm});
 	};
 
 	const handleSizeInputChange = (selectedSize: string, stock: number) => {
-		setForm((prev: ProductFormType) => {
+		const getNewForm = (prev: ProductFormType) => {
 			const updatedSizes = {...prev.sizes};
 			if (updatedSizes[selectedSize] !== undefined) {
 				updatedSizes[selectedSize] = stock;
@@ -55,7 +66,30 @@ const CreateProductModal = ({
 				...prev,
 				sizes: updatedSizes
 			};
-		});
+		};
+
+		const newForm = getNewForm(form);
+		dispatch({type: "SET_FORM", payload: newForm});
+	};
+
+	// now let's fix this first
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files && e.target.files[0]) {
+			const selectedFile = e.target.files[0];
+			dispatch({type: "SET_FILE", payload: selectedFile});
+
+			// getTheNew form
+			const imageUrl = URL.createObjectURL(selectedFile);
+			const getNewForm = (prev: ProductFormType) => ({
+				...prev,
+				prevImg: imageUrl
+			});
+
+			if (form.editMode) {
+				const newForm = getNewForm(form);
+				dispatch({type: "SET_FORM", payload: newForm});
+			}
+		}
 	};
 
 	const handleSubmit = (e: React.FormEvent) => {
@@ -68,7 +102,7 @@ const CreateProductModal = ({
 		formData.append("description", form.description);
 		formData.append("categoryType", form.categoryType);
 		formData.append("color", form.color);
-		if (file) formData.append("imgUrl", file);
+		if (adminState.file) formData.append("imgUrl", adminState.file);
 		if (form.id) formData.append("id", form.id);
 
 		// sizes Json
@@ -79,23 +113,8 @@ const CreateProductModal = ({
 		);
 		formData.append("sizes", sizesJson);
 
-		form.editMode ? onUpdate(formData): onSubmit(formData);
+		form.editMode ? onUpdate(formData) : onSubmit(formData);
 		onClose();
-	};
-
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files && e.target.files[0]) {
-			const selectedFile = e.target.files[0];
-			setFile(selectedFile);
-
-			if (form.editMode) {
-				const imageUrl = URL.createObjectURL(selectedFile);
-				setForm((prev: ProductFormType) => ({
-					...prev,
-					prevImg: imageUrl
-				}));
-			}
-		}
 	};
 
 	return (
@@ -303,7 +322,7 @@ const CreateProductModal = ({
 													<>
 														<Upload size={32} className="text-gray-400 mb-2" />
 														<p className="text-sm font-medium text-gray-700">
-															{form.imgPath ? 'Change product image' : 'Upload product image'}
+															{file ? 'Change product image' : 'Upload product image'}
 														</p>
 														<p className="text-xs text-gray-500 mt-1">
 															PNG, JPG up to 10MB
