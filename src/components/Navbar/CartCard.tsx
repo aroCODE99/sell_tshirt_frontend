@@ -31,7 +31,7 @@ const CartCard = ({cp}: {cp: [string, CartProduct]}) => {
 			{/* Product Info */}
 			<div className="flex flex-col justify-center flex-grow min-w-0">
 				<Link
-					to={isDeleted ? "#" : `/product/${product.id}`}
+					to={isDeleted ? "#" : `/shop/product/${product.id}`}
 					className={`truncate transition-colors ${isDeleted ? "text-gray-500 cursor-not-allowed" : "hover:text-blue-600"}`}
 				>
 					<span className={`font-medium text-base ${isDeleted ? "line-through text-gray-500" : "text-gray-900"}`}>
