@@ -59,14 +59,13 @@ const App = () => {
 
 									{/* Admin Routes */}
 									<Route path="admin" element={<IsAdmin />}>
-										<Route element={<AdminPage />}> 
+										<Route element={<AdminPage />}>
 											<Route path="products" element={<AdminProductPage />} />
 											<Route path="orders" element={<ShowOrders />} />
 										</Route>
 									</Route>
 								</Route>
 							</Route>
-
 							<Route path="/paymentCallback" element={<PaymentSuccess />} />
 							<Route path="/oauth/redirect" element={<OauthRedirect />} />
 

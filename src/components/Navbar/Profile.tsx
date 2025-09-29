@@ -6,6 +6,7 @@ import {Link} from "react-router-dom";
 const Profile = () => {
 	const {setFormType} = useLoginContext();
 	const {auth, handleLogout} = useAuth();
+	console.log(auth.isAdmin)
 
 	return (
 		<div className="relative h-full flex items-center group">
@@ -35,13 +36,15 @@ const Profile = () => {
 									My Orders
 								</button>
 							</Link>
+
+							{auth.isAdmin &&
 							<Link to={"/admin/products"}>
 								<button
 									className="mt-4 w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
 								>
 									Admin
 								</button>
-							</Link>
+							</Link>}
 						</>
 					}
 

@@ -66,7 +66,7 @@ const ShowOrders = () => {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-slate-50 to-slate-100">
+			<div className="h-screen flex flex-1 justify-center items-center bg-gradient-to-br from-slate-50 to-slate-100">
 				<div className="text-center">
 					<ClipLoader size={50} color="#3B82F6" />
 					<p className="mt-4 text-slate-600 font-medium">Loading orders...</p>

@@ -30,7 +30,7 @@ const MyOrders = () => {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex-1">
+			<div className="min-h-screen bg-gray-50 flex justify-center items-center">
 				<div className="text-center">
 					<ClipLoader size={40} color="#3B82F6" />
 					<p className="mt-4 text-gray-600">Loading your orders...</p>

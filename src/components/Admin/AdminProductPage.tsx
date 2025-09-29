@@ -27,41 +27,40 @@ const AdminProductPage = () => {
 	};
 
 	return (<main className="flex-1 p-6 lg:p-8">
-		{activeTab === "products" && (
-			<div className="space-y-6">
+		<div className="space-y-6">
 
-				{/* Header */}
-				<AdminPageHeader />
+			{/* Header */}
+			<AdminPageHeader />
 
-				{/* Search and Filter */}
-				<div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-					<div className="flex flex-col md:flex-row gap-3">
-						<div className="relative flex-1">
-							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-							<input
-								type="text"
-								placeholder="Search products by name or ID..."
-								className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-							/>
-						</div>
-						<button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-							<Filter size={16} /> Filter
-						</button>
+			{/* Search and Filter */}
+			<div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+				<div className="flex flex-col md:flex-row gap-3">
+					<div className="relative flex-1">
+						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+						<input
+							type="text"
+							placeholder="Search products by name or ID..."
+							className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+						/>
 					</div>
+					<button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+						<Filter size={16} /> Filter
+					</button>
 				</div>
-
-				{/* Product Table */}
-				{/* this is also fixed i guess */}
-				<ProductsTable
-					filteredProducts={filteredProducts}
-					handleFeaturedClick={handleFeaturedClick}
-				/>
 			</div>
-		)}
 
-	</main>);
+			{/* Product Table */}
+			{/* this is also fixed i guess */}
+			<ProductsTable
+				filteredProducts={filteredProducts}
+				handleFeaturedClick={handleFeaturedClick}
+			/>
+		</div>
+
+	</main>
+	);
 }
 
 export default AdminProductPage;

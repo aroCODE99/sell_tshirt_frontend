@@ -39,7 +39,7 @@ const ProductsTable = ({filteredProducts, handleFeaturedClick}: propsType) => {
 				prevImg: product.imgPath
 			}
 		});
-		dispatch({type: "SET_SHOW_CREATE_MODAL_FORM", payload: false});
+		dispatch({type: "SET_SHOW_CREATE_MODAL_FORM", payload: true});
 	};
 
 	return (

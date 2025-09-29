@@ -55,7 +55,7 @@ export default function CheckoutSummary() {
 					};
 
 					await API.post(`${import.meta.env.VITE_API_URL}/api/payment/callback`, data)
-					navigate("/shop/orders");
+					navigate("/orders");
 				},
 				"prefill": {
 					"name": auth.username,

@@ -1,4 +1,3 @@
-import {useState} from "react";
 import {useCreateProduct, useMakeFeatureProduct, useUpdateProduct} from "../../hooks/Queries";
 import {createPortal} from "react-dom";
 import CreateProductModal from "./CreateProductModal";
@@ -11,14 +10,15 @@ import {Outlet} from "react-router-dom";
 const AdminPage = () => {
 	const {mutate: makeFeatureProduct} = useMakeFeatureProduct();
 
-	const [showModal, setShowModal] = useState(false);
 	const {mutate: createProduct, isPending} = useCreateProduct();
 	const {mutate: updateProduct} = useUpdateProduct();
 
 	const {adminState, dispatch, clearForm} = useAdminContext();
 	const activeProduct = adminState.activeProduct;
 	const form = adminState.form;
+	const showModal = adminState.showFeatureModal;
 
+	console.log(activeProduct);
 	const confirmFeaturedChange = () => {
 		if (activeProduct) {
 			makeFeatureProduct(activeProduct.id);
@@ -56,7 +56,7 @@ const AdminPage = () => {
 					title="Change Featured Status"
 					description={`Do you want to ${activeProduct?.featured ? "remove" : "mark"} ${activeProduct?.name} as a Featured Product?`}
 					onClose={() => {
-						setShowModal(false)
+						dispatch({type:"SET_SHOW_FEATURED_MODAL", payload:false})
 					}}
 					handleMainSubmit={confirmFeaturedChange}
 				/>,
