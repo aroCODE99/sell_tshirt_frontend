@@ -77,7 +77,7 @@ const ShowOrders = () => {
 
 	if (isError) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+			<div className="min-h-screen flex flex-1 items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
 				<div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 text-center max-w-md">
 					<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
 						<XCircle className="text-red-500" size={32} />
@@ -210,12 +210,14 @@ const ShowOrders = () => {
 										<span className="text-sm text-slate-500">
 											Updated {formatDate(order.updatedAt)}
 										</span>
+										{ order.trackingDetails.status !== "PENDING" ?
 										<Link to={`/orders/track/${order.id}`}>
 											<button className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium">
 												<Eye size={16} />
 												View Details
 											</button>
-										</Link>
+										</Link>: <span className="text-red-500">ORDER IS PENDING</span>
+										}
 									</div>
 								</div>
 							</div>

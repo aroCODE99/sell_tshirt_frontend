@@ -121,23 +121,22 @@ export const useAddToCart = () => {
 	const addToCartUrl = "/api/cart/addToCart";
 	return useMutation({
 		mutationFn: (data: {product: CartProduct}): Promise<cartType> => {
-			return API.post(addToCartUrl, {productId: data.product.id, quantity: data.product.quantity, size: data.product.size});
+			return API.post(addToCartUrl, {productId: data.product.id, quantity: data.product.quantity, 
+							size: data.product.size});
 		},
 		async onMutate(variables) {
 			await queryClient.cancelQueries({queryKey: ["cart"]});
-
 			const prevCart = queryClient.getQueryData<cartType>(["cart"]);
 
 			queryClient.setQueryData(['cart'], (oldCart: cartType) => {
 				if (!oldCart) return {[variables.product.id]: variables.product};
-
 				const prevProduct = oldCart.cartProducts.find(cp => {
 					return cp.product.id === variables.product.id
 				})
-
 				if (prevProduct) return {
 					...oldCart,
-					[variables.product.id]: {...variables.product, quantity: prevProduct.quantity + variables.product.quantity, size: variables.product.size}
+					[variables.product.id]: {...variables.product, quantity: prevProduct.quantity 
+						+ variables.product.quantity, size: variables.product.size}
 				}
 			})
 

@@ -5,7 +5,7 @@ import type { ModalActions } from "../../types/ModalActions";
 
 const ConfirmCheckout = ({
 	setConfirmCheckout,
-	action 
+	action
 }: { setConfirmCheckout: React.Dispatch<React.SetStateAction<boolean>>, action: ModalActions }) => {
 	const { mutate: placeOrder } = usePlaceOrder();
 	const { refetch } = useRecentOrder();
@@ -38,7 +38,7 @@ const ConfirmCheckout = ({
 					Confirm {action}
 				</h1>
 				<p className="text-gray-600 mb-6">
-					{action === "checkout" ? "Are you sure you want to place this order?" : 
+					{action === "checkout" ? "Are you sure you want to place this order?" :
 						"Are you sure you want to remove from cart?"}
 				</p>
 				<div className="flex justify-end gap-3">

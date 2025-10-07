@@ -1,17 +1,22 @@
-import {useEffect, useState} from "react";
-import {Link} from "react-router-dom";
-import {useAuth} from "../../contexts/AuthContext";
-import type {ProductsType, sizeType} from "../../types/ProductsType";
-import {useLoginContext} from "../../contexts/LoginContext";
-import {useAddToCart} from "../../hooks/Queries";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import type { ProductsType } from "../../types/ProductsType";
+import { useLoginContext } from "../../contexts/LoginContext";
+import { useAddToCart } from "../../hooks/Queries";
 import SizeModal from "./SizeModal";
-import {createPortal} from "react-dom";
-import {Heart, ShoppingCart, Edit2, Eye, Star} from "lucide-react";
+import { createPortal } from "react-dom";
+import { Heart, ShoppingCart, Edit2, Eye, Star } from "lucide-react";
 
-const ProductCard = ({product}: {product: ProductsType}) => {
-	const {auth} = useAuth();
-	const {setFormType} = useLoginContext();
-	const {isPending} = useAddToCart();
+const ProductCard = ({ product }: { product: ProductsType }) => {
+	const { auth } = useAuth();
+	const { setFormType } = useLoginContext();
+	const { isPending } = useAddToCart();
+
+	// now i need to use the path here
+	// you should not do this but i am doing it because you know i am god
+	const currentUrl = useLocation();
+	const isHome = currentUrl.pathname.includes("shop");
 
 	// Modal state
 	const [showSizeModal, setShowSizeModal] = useState(false);
@@ -65,14 +70,14 @@ const ProductCard = ({product}: {product: ProductsType}) => {
 						<button
 							onClick={handleWishlistClick}
 							className={`p-2 rounded-full shadow-md backdrop-blur-sm ${isWishlisted
-									? "bg-red-500 text-white"
-									: "bg-white/90 text-gray-700 hover:bg-red-500 hover:text-white"
+								? "bg-red-500 text-white"
+								: "bg-white/90 text-gray-700 hover:bg-red-500 hover:text-white"
 								} transition-colors`}
 						>
 							<Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
 						</button>
 
-						<Link to={`/product/${product.id}`}>
+						<Link to={isHome ? `product/${product.id}` : `/shop/product/${product.id}`}>
 							<button className="p-2 bg-white/90 text-gray-700 rounded-full shadow-md backdrop-blur-sm hover:bg-black hover:text-white transition-colors">
 								<Eye size={18} />
 							</button>
@@ -98,7 +103,7 @@ const ProductCard = ({product}: {product: ProductsType}) => {
 
 				{/* Card Details */}
 				<div className="p-4 flex-grow space-y-2">
-					<Link to={`/product/${product.id}`}>
+					<Link to={isHome ? `product/${product.id}` : `/shop/product/${product.id}`}>
 						<h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors line-clamp-2">
 							{product.name}
 						</h3>

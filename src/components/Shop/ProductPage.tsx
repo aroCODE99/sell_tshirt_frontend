@@ -1,8 +1,8 @@
-import {useRef, useState} from "react";
+import { useRef, useState } from "react";
 import NoProducts from "./NoProducts";
-import {Link, useParams} from "react-router-dom";
-import {useProducts} from "../../hooks/Queries";
-import type {ProductsType, sizeType} from "../../types/ProductsType";
+import { Link, useParams } from "react-router-dom";
+import { useAddToCart, useProducts } from "../../hooks/Queries";
+import type { CartProduct, ProductsType, sizeType } from "../../types/ProductsType";
 import {
 	Heart,
 	Share,
@@ -20,13 +20,16 @@ import {
 	Sparkles
 } from "lucide-react";
 import ScrollToTop from "../ScrollToTop";
+import { useCartContext } from "../../contexts/CartContext";
 
 export const sizings: sizeType[] = ["XSM", "SM", "M", "LG", "XL", "XXL"];
 
 const ProductPage = () => {
-	const {data: products} = useProducts();
-	const { mutate } = useAddToCart();
-	const {id} = useParams();
+	const { data: products } = useProducts();
+	const { mutate: addToCart } = useAddToCart();
+	const { dispatchCartAction } = useCartContext();
+	const { id } = useParams();
+	// now we hacking the stuff
 	const activeProduct: ProductsType | undefined = Object.values(products ?? {}).find((t) => (
 		t.id === Number(id)
 	));
@@ -51,9 +54,19 @@ const ProductPage = () => {
 	const decreaseQty = () => setQuantity(q => (q > 1 ? q - 1 : 1));
 
 	const handleAddToCart = () => {
+		if (!selectedSize) { 
+			alert("Plz select the size");
+			return;
+		}
 		setAddedToCart(true);
-		// Reset after 2 seconds
-		setTimeout(() => setAddedToCart(false), 2000);
+		const cartProduct: CartProduct = { 
+			...activeProduct, 
+			quantity,
+			size: selectedSize
+		}
+		dispatchCartAction({type: "SET_CART_SIDEBAR_OPEN", payload: true });
+		addToCart({product: cartProduct}); // now this active product need the size and quantity
+		setTimeout(() => setAddedToCart(false), 2000); 
 	};
 
 	// Dummy product rating and reviews
@@ -101,8 +114,8 @@ const ProductPage = () => {
 									<button
 										onClick={() => setIsFavorite(!isFavorite)}
 										className={`p-3 rounded-2xl backdrop-blur-md transition-all duration-300 ${isFavorite
-												? 'bg-red-500/90 text-white shadow-lg transform scale-110'
-												: 'bg-white/80 text-gray-700 hover:bg-white/90 hover:scale-105'
+											? 'bg-red-500/90 text-white shadow-lg transform scale-110'
+											: 'bg-white/80 text-gray-700 hover:bg-white/90 hover:scale-105'
 											}`}
 									>
 										<Heart size={20} fill={isFavorite ? "currentColor" : "none"} />
@@ -123,8 +136,8 @@ const ProductPage = () => {
 										key={idx}
 										onClick={() => setActiveImage(idx)}
 										className={`flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-3 transition-all duration-300 transform hover:scale-105 ${activeImage === idx
-												? "border-blue-500 shadow-lg"
-												: "border-gray-200 hover:border-gray-300"
+											? "border-blue-500 shadow-lg"
+											: "border-gray-200 hover:border-gray-300"
 											}`}
 									>
 										<img
@@ -216,7 +229,7 @@ const ProductPage = () => {
 									<div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
 										<div
 											className="w-12 h-12 rounded-2xl border-2 border-white shadow-lg"
-											style={{backgroundColor: activeProduct.color}}
+											style={{ backgroundColor: activeProduct.color }}
 										/>
 										<span className="text-gray-700 capitalize font-medium">{activeProduct.color}</span>
 									</div>
@@ -291,7 +304,8 @@ const ProductPage = () => {
 							<div className="space-y-4 sticky bottom-0 bg-white pt-8 border-t border-gray-100">
 								<button
 									onClick={handleAddToCart}
-									className={`w-full py-5 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center gap-3 ${addedToCart
+									className={`w-full py-5 rounded-2xl font-semibold text-lg transition-all duration-300 
+								transform hover:scale-[1.02] flex items-center justify-center gap-3 ${addedToCart
 											? 'bg-green-500 hover:bg-green-600 text-white shadow-lg'
 											: 'bg-blue-500 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl'
 										}`}
@@ -361,12 +375,12 @@ const ProductPage = () => {
 								</h3>
 								<dl className="space-y-4">
 									{[
-										{term: "Material", detail: "100% Premium Cotton"},
-										{term: "Weight", detail: "0.3 kg (Lightweight)"},
-										{term: "Origin", detail: "Made in India"},
-										{term: "Care", detail: "Machine Wash Cold"},
-										{term: "Fit", detail: "Regular Fit"},
-										{term: "Sustainability", detail: "Eco-Friendly Certified"}
+										{ term: "Material", detail: "100% Premium Cotton" },
+										{ term: "Weight", detail: "0.3 kg (Lightweight)" },
+										{ term: "Origin", detail: "Made in India" },
+										{ term: "Care", detail: "Machine Wash Cold" },
+										{ term: "Fit", detail: "Regular Fit" },
+										{ term: "Sustainability", detail: "Eco-Friendly Certified" }
 									].map((item, index) => (
 										<div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
 											<dt className="text-gray-600 font-medium">{item.term}</dt>

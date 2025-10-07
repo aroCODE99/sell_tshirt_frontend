@@ -1,27 +1,27 @@
-import {HiOutlineLocationMarker, HiOutlineTruck} from "react-icons/hi";
-import {useNavigate} from "react-router-dom";
-import {useGetAddresses, useRecentOrder} from "../../hooks/Queries";
-import {ClipLoader} from "react-spinners";
-import {useMemo, useState} from "react";
+import { HiOutlineLocationMarker, HiOutlineTruck } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
+import { useGetAddresses, useRecentOrder } from "../../hooks/Queries";
+import { ClipLoader } from "react-spinners";
+import { useMemo, useState } from "react";
 import AddressSidebar from "../PaymentFlow/AddressSidebar";
-import {createPortal} from "react-dom";
+import { createPortal } from "react-dom";
 import AddressFormModal from "../PaymentFlow/AddressFormModal";
-import {useAuth} from "../../contexts/AuthContext";
-import {API} from "../../utilities/axiosInterceptor";
-import {useRazorpay, type RazorpayOrderOptions} from "react-razorpay";
+import { useAuth } from "../../contexts/AuthContext";
+import { API } from "../../utilities/axiosInterceptor";
+import { useRazorpay, type RazorpayOrderOptions } from "react-razorpay";
 import ServerError from "../ServerError";
-import type {addressType} from "../../types/UserType";
-import {toast} from "react-toastify";
+import type { addressType } from "../../types/UserType";
+import { toast } from "react-toastify";
 
 export default function CheckoutSummary() {
-	const {data: userAddresses = [], isLoading, error: apiError} = useGetAddresses();
-	const {data: item} = useRecentOrder(); // which is using the recentOrder
-	const {auth} = useAuth();
+	const { data: userAddresses = [], isLoading, error: apiError } = useGetAddresses();
+	const { data: item } = useRecentOrder(); // which is using the recentOrder
+	const { auth } = useAuth();
 	const [showAddressSidebar, setShowAddressSidebar] = useState(false);
 	const [showAddressForm, setShowAddressForm] = useState(false);
 
 	const [selectedAddress, setSelectedAddress] = useState<addressType | undefined>();
-	const {error, isLoading: razorpayLoading, Razorpay} = useRazorpay();
+	const { error, isLoading: razorpayLoading, Razorpay } = useRazorpay();
 
 	const convenienceFee = 20;
 
@@ -31,10 +31,11 @@ export default function CheckoutSummary() {
 
 	const address = selectedAddress || userAddresses?.[0]; // fallback to first address
 	const navigate = useNavigate();
+	const totalAmount = Math.ceil(item?.totalAmount ?? 0);
 
 	const handlePayment = async () => {
 		if (selectedAddress) {
-			const res = await API.post(`/api/payment/create-order?amount=${item?.totalAmount + convenienceFee}`);
+			const res = await API.post(`/api/payment/create-order?amount=${totalAmount + convenienceFee}`);
 			const order = res.data;
 
 			var options: RazorpayOrderOptions = {
@@ -188,7 +189,7 @@ export default function CheckoutSummary() {
 								</a>
 							</p>
 						</div>
-
+ 
 						{/* Order Details */}
 						<h3 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h3>
 						<div className="space-y-2 text-sm">

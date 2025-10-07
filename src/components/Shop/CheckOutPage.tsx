@@ -1,21 +1,20 @@
-import {useState} from "react";
-import {useRecentOrder} from "../../hooks/Queries";
-import {RiDeleteBin6Line} from "react-icons/ri";
+import { useState } from "react";
+import { useRecentOrder } from "../../hooks/Queries";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import FeatureSection from "./FeatureSection";
-import {ClipLoader} from "react-spinners";
-import {Link} from "react-router-dom";
+import { ClipLoader } from "react-spinners";
+import { Link } from "react-router-dom";
 import CouponSection from "./CouponSection";
 
 export default function CheckOutPage() {
-	const {data: recentOrder, isLoading} = useRecentOrder();
+	const { data: recentOrder, isLoading } = useRecentOrder();
 	const [couponCode, setCouponCode] = useState("");
-	console.log(recentOrder?.totalAmount);
 
 	// Dummy coupons array
 	const coupons = [
-		{code: "NEWUSER10", description: "Get 10% off for first-time purchase"},
-		{code: "FREESHIP", description: "Free shipping on orders above ₹1000"},
-		{code: "SAVE200", description: "Flat ₹200 off on orders above ₹1500"},
+		{ code: "NEWUSER10", description: "Get 10% off for first-time purchase" },
+		{ code: "FREESHIP", description: "Free shipping on orders above ₹1000" },
+		{ code: "SAVE200", description: "Flat ₹200 off on orders above ₹1500" },
 	];
 
 	const [activeCoupon, setActiveCoupon] = useState("");
@@ -23,7 +22,7 @@ export default function CheckOutPage() {
 	const items = Object.values(recentOrder?.orderProducts ?? {});
 
 	const subtotal = items.reduce(
-		(sum, item) => sum + item.priceAtPurchase * item.quantity,
+		(sum, item) => sum + item.product.discountedPrice * item.quantity,
 		0
 	);
 
@@ -31,7 +30,7 @@ export default function CheckOutPage() {
 	const convenienceFee = 20;
 
 	const total = recentOrder?.orderProducts.reduce(
-		(acc, op) => acc + op.product.price * op.quantity,
+		(acc, op) => acc + op.product.discountedPrice * op.quantity,
 		0
 	);
 
@@ -80,7 +79,7 @@ export default function CheckOutPage() {
 									</div>
 									<div className="text-right">
 										<p className="text-lg font-semibold text-gray-900">
-											₹{(item.priceAtPurchase * item.quantity).toFixed(2)}
+											₹{(item.product.discountedPrice * item.quantity).toFixed(2)}
 										</p>
 										<p className="text-xs text-gray-500">
 											₹{item.priceAtPurchase} each
@@ -104,7 +103,7 @@ export default function CheckOutPage() {
 								<div className="mt-6 space-y-2 text-gray-700">
 									<div className="flex justify-between">
 										<span>Subtotal</span>
-										<span>₹{subtotal.toFixed(2)}</span>
+										<span>₹{total?.toFixed(2)}</span>
 									</div>
 									<div className="flex justify-between">
 										<span>Shipping</span>

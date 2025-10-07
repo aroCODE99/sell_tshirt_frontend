@@ -7,7 +7,7 @@ const PaymentSuccess = () => {
 			<div className="bg-white shadow-lg rounded-2xl p-8 text-center max-w-md w-full">
 				<CheckCircle2 className="mx-auto text-green-500" size={72} />
 				<h1 className="text-2xl font-bold mt-4 text-gray-800">
-					Payment Successful 🎉
+					Payment Successful 
 				</h1>
 				<p className="text-gray-600 mt-2">
 					Thank you for your purchase! Your order has been confirmed and will be processed shortly.
@@ -33,4 +33,3 @@ const PaymentSuccess = () => {
 };
 
 export default PaymentSuccess;
-

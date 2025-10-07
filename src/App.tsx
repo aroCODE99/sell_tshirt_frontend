@@ -1,13 +1,13 @@
-import {Route, Routes} from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout.tsx";
-import {LoginProvider} from "./contexts/LoginContext.tsx";
+import { LoginProvider } from "./contexts/LoginContext.tsx";
 import HomePage from "./components/HomePage/HomePage.tsx";
 import ShopPage from "./components/Shop/ShopPage.tsx";
 import ProductPage from "./components/Shop/ProductPage.tsx";
-import {FilterProvider} from "./contexts/FilterContext.tsx";
-import {CartContextProvider} from "./contexts/CartContext.tsx";
+import { FilterProvider } from "./contexts/FilterContext.tsx";
+import { CartContextProvider } from "./contexts/CartContext.tsx";
 import LoginModal from "./components/Login/LoginModal.tsx";
-import {ToastContainer} from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import CheckOutPage from "./components/Shop/CheckOutPage.tsx";
 import MyOrders from "./components/orders/MyOrders.tsx";
 import CheckoutSummary from "./components/Navbar/CheckoutSummary.tsx";
@@ -18,7 +18,7 @@ import React from "react";
 import TrackingDetails from "./components/orders/TrackingDetails.tsx";
 import OauthRedirect from "./components/OauthRedirect.tsx";
 import ShowOrders from "./components/Admin/ShowOrders.tsx";
-import {AdminContextProvider} from "./contexts/AdminContext.tsx";
+import { AdminContextProvider } from "./contexts/AdminContext.tsx";
 import AdminProductPage from "./components/Admin/AdminProductPage.tsx";
 
 const AdminPage = React.lazy(() => import("./components/Admin/AdminPages.tsx"));
